@@ -16,13 +16,13 @@ const Index = () => {
   const [tapCount, setTapCount] = useState(0);
   const [lastTap, setLastTap] = useState(0);
 
-  // Simulate watch trigger: 4 rapid taps on the shield icon
+  // Simulate watch trigger: 2 rapid taps on the watch icon
   const handleWatchTap = useCallback(() => {
     const now = Date.now();
     if (now - lastTap < 600) {
       const newCount = tapCount + 1;
       setTapCount(newCount);
-      if (newCount >= 3 && state === "idle") {
+      if (newCount >= 1 && state === "idle") {
         setState("countdown");
         setCountdown(settings.delaySeconds);
         setTapCount(0);
@@ -130,7 +130,7 @@ const Index = () => {
               <Watch className="w-12 h-12 text-muted-foreground" />
             </button>
             <p className="text-muted-foreground text-sm text-center max-w-[250px]">
-              Toca 4 veces rápido para activar la llamada falsa
+              Toca 2 veces rápido para activar la llamada falsa
             </p>
 
             <div className="w-full max-w-xs border-t border-border pt-6 mt-2">
