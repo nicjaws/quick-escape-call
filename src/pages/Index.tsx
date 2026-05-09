@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Settings, Phone, Watch, Shield } from "lucide-react";
 import { useCallSettings } from "@/hooks/useCallSettings";
+import { useWatchTrigger } from "@/hooks/useWatchTrigger";
 import SettingsPanel from "@/components/SettingsPanel";
 import IncomingCallScreen from "@/components/IncomingCallScreen";
 import ActiveCallScreen from "@/components/ActiveCallScreen";
@@ -47,6 +48,14 @@ const Index = () => {
     setState("countdown");
     setCountdown(settings.delaySeconds);
   };
+
+  // Disparo desde el Apple Watch (vía plugin nativo)
+  useWatchTrigger(() => {
+    if (state === "idle") {
+      setState("countdown");
+      setCountdown(settings.delaySeconds);
+    }
+  });
 
   const cancelCall = () => {
     setState("idle");
