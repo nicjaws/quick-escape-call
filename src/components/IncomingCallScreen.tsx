@@ -17,35 +17,55 @@ export default function IncomingCallScreen({
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Use Web Audio API to create a ringtone-like sound
     const ctx = new AudioContext();
     let stopped = false;
 
+    // Classic "Old Phone" bell ringtone: dual-tone (440 + 480 Hz)
+    // with a 20 Hz tremolo, 2s ON / 4s OFF cadence (US bell standard).
+    const playBell = (durationMs: number) => {
+      const now = ctx.currentTime;
+      const dur = durationMs / 1000;
+
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      osc1.type = "sine";
+      osc2.type = "sine";
+      osc1.frequency.value = 440;
+      osc2.frequency.value = 480;
+
+      // Tremolo: ~20 Hz amplitude modulation gives the bell "warble"
+      const tremolo = ctx.createOscillator();
+      tremolo.type = "sine";
+      tremolo.frequency.value = 20;
+      const tremoloGain = ctx.createGain();
+      tremoloGain.gain.value = 0.25;
+      tremolo.connect(tremoloGain);
+
+      const gain = ctx.createGain();
+      tremoloGain.connect(gain.gain);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.35, now + 0.05);
+      gain.gain.setValueAtTime(0.35, now + dur - 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      tremolo.start(now);
+      osc1.stop(now + dur);
+      osc2.stop(now + dur);
+      tremolo.stop(now + dur);
+    };
+
     const playRing = async () => {
       while (!stopped) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 440;
-        osc.type = "sine";
-        gain.gain.value = 0.3;
-        osc.start();
-        await new Promise((r) => setTimeout(r, 400));
-        osc.stop();
-        await new Promise((r) => setTimeout(r, 200));
-        if (stopped) break;
-        const osc2 = ctx.createOscillator();
-        const gain2 = ctx.createGain();
-        osc2.connect(gain2);
-        gain2.connect(ctx.destination);
-        osc2.frequency.value = 480;
-        osc2.type = "sine";
-        gain2.gain.value = 0.3;
-        osc2.start();
-        await new Promise((r) => setTimeout(r, 400));
-        osc2.stop();
+        playBell(2000);
         await new Promise((r) => setTimeout(r, 2000));
+        if (stopped) break;
+        await new Promise((r) => setTimeout(r, 4000));
       }
     };
 
