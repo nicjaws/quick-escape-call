@@ -12,7 +12,7 @@ export default function SettingsPanel({ settings, onChange }: SettingsPanelProps
     <div className="flex flex-col gap-6">
       <div className="space-y-2">
         <Label htmlFor="callerName" className="text-muted-foreground text-xs uppercase tracking-wider">
-          Nombre del contacto
+          Nombre del contacto / Contact name
         </Label>
         <Input
           id="callerName"
@@ -24,21 +24,8 @@ export default function SettingsPanel({ settings, onChange }: SettingsPanelProps
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="callerLabel" className="text-muted-foreground text-xs uppercase tracking-wider">
-          Etiqueta secundaria
-        </Label>
-        <Input
-          id="callerLabel"
-          value={settings.callerLabel}
-          onChange={(e) => onChange({ ...settings, callerLabel: e.target.value })}
-          placeholder="Ej: iPhone, Móvil..."
-          className="bg-secondary border-border text-foreground"
-        />
-      </div>
-
-      <div className="space-y-2">
         <Label htmlFor="delay" className="text-muted-foreground text-xs uppercase tracking-wider">
-          Retardo (segundos)
+          Retardo (segundos) / Delay (seconds)
         </Label>
         <Input
           id="delay"
