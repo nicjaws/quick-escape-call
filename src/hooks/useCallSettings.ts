@@ -4,12 +4,16 @@ export interface CallSettings {
   callerName: string;
   callerLabel: string;
   delaySeconds: number;
+  callerPhoto?: string; // data URL
+  lockedScreen?: boolean;
 }
 
 const DEFAULT_SETTINGS: CallSettings = {
   callerName: "Trabajo",
-  callerLabel: "iPhone",
+  callerLabel: "móvil",
   delaySeconds: 30,
+  callerPhoto: undefined,
+  lockedScreen: false,
 };
 
 export function useCallSettings() {

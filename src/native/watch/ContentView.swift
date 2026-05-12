@@ -34,9 +34,16 @@ struct ContentView: View {
             }
             .buttonStyle(PlainButtonStyle())
             
-            Text("Toca 2 veces rapido")
-                .font(.caption2)
-                .foregroundColor(.gray)
+            VStack(spacing: 2) {
+                Text("Toca dos veces rápido para activar llamada falsa")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                Text("Tap twice quickly to activate fake call")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+            }
         }
     }
     

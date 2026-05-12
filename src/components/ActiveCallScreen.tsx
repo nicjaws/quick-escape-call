@@ -1,12 +1,13 @@
-import { Mic, MicOff, Volume2, Phone, Grid3x3, Plus, Video, User, Signal, Wifi, BatteryFull } from "lucide-react";
+import { Mic, MicOff, Volume2, Phone, Grid3x3, Video, MoreHorizontal } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface ActiveCallScreenProps {
   callerName: string;
+  callerPhoto?: string;
   onHangUp: () => void;
 }
 
-export default function ActiveCallScreen({ callerName, onHangUp }: ActiveCallScreenProps) {
+export default function ActiveCallScreen({ callerName, callerPhoto, onHangUp }: ActiveCallScreenProps) {
   const [seconds, setSeconds] = useState(0);
   const [muted, setMuted] = useState(false);
   const [speaker, setSpeaker] = useState(false);
@@ -22,9 +23,6 @@ export default function ActiveCallScreen({ callerName, onHangUp }: ActiveCallScr
     return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   };
 
-  const now = new Date();
-  const clock = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-
   const IconBtn = ({
     icon: Icon,
     label,
@@ -39,77 +37,67 @@ export default function ActiveCallScreen({ callerName, onHangUp }: ActiveCallScr
     <div className="flex flex-col items-center gap-2">
       <button
         onClick={onClick}
-        className={`w-[72px] h-[72px] rounded-full flex items-center justify-center transition-colors ${
-          active ? "bg-foreground text-background" : "bg-foreground/15 text-foreground"
+        className={`w-[68px] h-[68px] rounded-full flex items-center justify-center transition-colors backdrop-blur ${
+          active ? "bg-white text-black" : "bg-white/20 text-white"
         }`}
       >
         <Icon className="w-7 h-7" strokeWidth={1.5} />
       </button>
-      <span className="text-xs text-foreground/90">{label}</span>
+      <span className="text-xs text-white">{label}</span>
     </div>
   );
 
+  const bgStyle = callerPhoto
+    ? { backgroundImage: `url(${callerPhoto})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : {};
+
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-background select-none"
+      className="fixed inset-0 z-50 flex flex-col bg-black select-none text-white"
       style={{
         paddingTop: "env(safe-area-inset-top, 50px)",
         paddingBottom: "env(safe-area-inset-bottom, 30px)",
+        ...bgStyle,
       }}
     >
-      {/* iOS status bar */}
-      <div className="flex items-center justify-between px-8 pt-1 text-foreground text-sm font-semibold">
-        <span>{clock}</span>
-        <div className="flex items-center gap-1.5">
-          <Signal className="w-4 h-4" />
-          <Wifi className="w-4 h-4" />
-          <BatteryFull className="w-5 h-5" />
-        </div>
-      </div>
+      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
       {/* Caller info */}
-      <div className="flex flex-col items-center pt-10 gap-2">
-        <h1 className="text-[34px] font-light text-foreground leading-tight">{callerName}</h1>
-        <p className="text-foreground/80 text-base">{formatTime(seconds)}</p>
+      <div className="relative flex flex-col items-center pt-8 gap-1">
+        <p className="text-call-blue text-xl font-light">{formatTime(seconds)}</p>
+        <h1 className="text-[64px] leading-none font-light text-call-blue">{callerName}</h1>
       </div>
 
       <div className="flex-1" />
 
       {/* Action grid */}
-      <div className="px-10 pb-8">
+      <div className="relative px-8 pb-8">
         <div className="grid grid-cols-3 gap-y-6 justify-items-center">
           <IconBtn
-            icon={muted ? MicOff : Mic}
-            label="silenciar"
-            active={muted}
-            onClick={() => setMuted(!muted)}
-          />
-          <IconBtn icon={Grid3x3} label="teclado" />
-          <IconBtn
             icon={Volume2}
-            label="audio"
+            label="Altavoz"
             active={speaker}
             onClick={() => setSpeaker(!speaker)}
           />
-          <IconBtn icon={Plus} label="añadir" />
           <IconBtn icon={Video} label="FaceTime" />
-          <IconBtn icon={User} label="contactos" />
+          <IconBtn
+            icon={muted ? MicOff : Mic}
+            label="Silenciar"
+            active={muted}
+            onClick={() => setMuted(!muted)}
+          />
+          <IconBtn icon={MoreHorizontal} label="Más" />
+          <div className="flex flex-col items-center gap-2">
+            <button
+              onClick={onHangUp}
+              className="w-[68px] h-[68px] rounded-full bg-call-red flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <Phone className="w-7 h-7 text-white rotate-[135deg]" />
+            </button>
+            <span className="text-xs text-white">Finalizar</span>
+          </div>
+          <IconBtn icon={Grid3x3} label="Teclado" />
         </div>
-
-        {/* Hang up */}
-        <div className="flex justify-center mt-10">
-          <button
-            onClick={onHangUp}
-            className="w-[72px] h-[72px] rounded-full bg-call-red flex items-center justify-center active:scale-95 transition-transform"
-          >
-            <Phone className="w-8 h-8 text-primary-foreground rotate-[135deg]" />
-          </button>
-        </div>
-      </div>
-
-      {/* Home indicator */}
-      <div className="flex justify-center pb-1">
-        <div className="w-32 h-[5px] rounded-full bg-foreground/80" />
       </div>
     </div>
   );

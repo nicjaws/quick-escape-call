@@ -21,6 +21,7 @@ export default {
         foreground: "hsl(var(--foreground))",
         "call-green": "hsl(var(--call-green))",
         "call-red": "hsl(var(--call-red))",
+        "call-blue": "hsl(var(--call-blue))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
