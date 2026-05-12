@@ -6,7 +6,7 @@ import SettingsPanel from "@/components/SettingsPanel";
 import IncomingCallScreen from "@/components/IncomingCallScreen";
 import ActiveCallScreen from "@/components/ActiveCallScreen";
 
-type AppState = "idle" | "armed" | "countdown" | "ringing" | "active";
+type AppState = "idle" | "armed" | "countdown" | "ringing" | "retry-wait" | "active";
 
 const Index = () => {
   const { settings, setSettings } = useCallSettings();
@@ -65,19 +65,37 @@ const Index = () => {
   const answerCall = () => setState("active");
   const hangUp = () => setState("idle");
 
+  // Auto retry: if ringing not answered within 20s, wait 60s and ring again
+  useEffect(() => {
+    if (state !== "retry-wait") return;
+    const t = setTimeout(() => setState("ringing"), 60000);
+    return () => clearTimeout(t);
+  }, [state]);
+
+  const handleRingTimeout = () => setState("retry-wait");
+
   if (state === "ringing") {
     return (
       <IncomingCallScreen
         callerName={settings.callerName}
         callerLabel={settings.callerLabel}
+        callerPhoto={settings.callerPhoto}
+        locked={settings.lockedScreen}
         onAnswer={answerCall}
         onDecline={hangUp}
+        onTimeout={handleRingTimeout}
       />
     );
   }
 
   if (state === "active") {
-    return <ActiveCallScreen callerName={settings.callerName} onHangUp={hangUp} />;
+    return (
+      <ActiveCallScreen
+        callerName={settings.callerName}
+        callerPhoto={settings.callerPhoto}
+        onHangUp={hangUp}
+      />
+    );
   }
 
   return (
@@ -130,7 +148,9 @@ const Index = () => {
               <Watch className="w-12 h-12 text-muted-foreground" />
             </button>
             <p className="text-muted-foreground text-sm text-center max-w-[250px]">
-              Toca 2 veces rápido para activar la llamada falsa
+              Toca dos veces rápido para activar llamada falsa
+              <br />
+              <span className="text-muted-foreground/70">Tap twice quickly to activate fake call</span>
             </p>
 
             <div className="w-full max-w-xs border-t border-border pt-6 mt-2">
