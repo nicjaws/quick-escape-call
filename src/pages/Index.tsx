@@ -138,6 +138,23 @@ const Index = () => {
               Cancelar
             </button>
           </div>
+        ) : state === "retry-wait" ? (
+          <div className="flex flex-col items-center gap-6 animate-slide-up">
+            <div className="w-32 h-32 rounded-full border-4 border-call-blue flex items-center justify-center">
+              <Phone className="w-10 h-10 text-call-blue" />
+            </div>
+            <p className="text-muted-foreground text-center max-w-[260px]">
+              Reintentando llamada en 1 minuto...
+              <br />
+              <span className="text-muted-foreground/70">Retrying call in 1 minute…</span>
+            </p>
+            <button
+              onClick={cancelCall}
+              className="px-8 py-3 rounded-xl bg-call-red text-primary-foreground font-medium active:scale-[0.98] transition-transform"
+            >
+              Cancelar
+            </button>
+          </div>
         ) : (
           <div className="flex flex-col items-center gap-8">
             {/* Watch trigger simulation */}
