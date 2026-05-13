@@ -9,7 +9,7 @@ export interface CallSettings {
 
 const DEFAULT_SETTINGS: CallSettings = {
   callerName: "Trabajo",
-  delaySeconds: 30,
+  delaySeconds: 10,
   callerPhoto: undefined,
   lockedScreen: false,
 };

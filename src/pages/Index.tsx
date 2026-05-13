@@ -107,14 +107,15 @@ export default function Index() {
             </button>
           </div>
         ) : state === "countdown" ? (
-          /* Cuenta atrás */
+          /* Activado: solo 👍 en el primer segundo */
           <div className="flex-1 flex flex-col items-center justify-center gap-8 animate-slide-up">
-            <div className="w-36 h-36 rounded-full border-[6px] border-call-green flex items-center justify-center shadow-lg shadow-call-green/20">
-              <span className="text-6xl font-light text-call-green tabular-nums">{countdown}</span>
-            </div>
-            <p className="text-muted-foreground text-center text-lg">
-              Llamada de <span className="text-foreground font-semibold">{settings.callerName}</span>
-            </p>
+            {countdown === settings.delaySeconds ? (
+              <div className="w-36 h-36 rounded-full bg-call-green flex items-center justify-center shadow-lg shadow-call-green/20">
+                <span className="text-7xl" role="img" aria-label="Activado">👍</span>
+              </div>
+            ) : (
+              <div className="w-36 h-36" />
+            )}
             <button
               onClick={cancelCall}
               className="px-10 py-3.5 rounded-2xl bg-call-red text-white font-medium text-base active:scale-[0.98] transition-transform shadow-lg shadow-call-red/25"
