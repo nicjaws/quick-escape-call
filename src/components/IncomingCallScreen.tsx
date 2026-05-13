@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 
 interface IncomingCallScreenProps {
   callerName: string;
-  callerLabel: string;
   callerPhoto?: string;
   locked?: boolean;
   onAnswer: () => void;
@@ -13,7 +12,6 @@ interface IncomingCallScreenProps {
 
 export default function IncomingCallScreen({
   callerName,
-  callerLabel,
   callerPhoto,
   locked = false,
   onAnswer,
