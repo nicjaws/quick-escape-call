@@ -1,37 +1,26 @@
 import { useState, useEffect, useCallback } from "react";
-import { Settings, Phone, Watch, Shield } from "lucide-react";
+import { Settings, Phone, Watch } from "lucide-react";
 import { useCallSettings } from "@/hooks/useCallSettings";
 import { useWatchTrigger } from "@/hooks/useWatchTrigger";
 import SettingsPanel from "@/components/SettingsPanel";
 import IncomingCallScreen from "@/components/IncomingCallScreen";
 import ActiveCallScreen from "@/components/ActiveCallScreen";
 
-type AppState = "idle" | "armed" | "countdown" | "ringing" | "retry-wait" | "active";
+type AppState = "idle" | "countdown" | "ringing" | "retry-wait" | "active";
 
-const Index = () => {
+export default function Index() {
   const { settings, setSettings } = useCallSettings();
   const [state, setState] = useState<AppState>("idle");
   const [showSettings, setShowSettings] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const [tapCount, setTapCount] = useState(0);
-  const [lastTap, setLastTap] = useState(0);
 
-  // Simulate watch trigger: 2 rapid taps on the watch icon
-  const handleWatchTap = useCallback(() => {
-    const now = Date.now();
-    if (now - lastTap < 600) {
-      const newCount = tapCount + 1;
-      setTapCount(newCount);
-      if (newCount >= 1 && state === "idle") {
-        setState("countdown");
-        setCountdown(settings.delaySeconds);
-        setTapCount(0);
-      }
-    } else {
-      setTapCount(0);
+  // Disparo desde Apple Watch (plugin nativo)
+  useWatchTrigger(() => {
+    if (state === "idle") {
+      setState("countdown");
+      setCountdown(settings.delaySeconds);
     }
-    setLastTap(now);
-  }, [lastTap, tapCount, state, settings.delaySeconds]);
+  });
 
   // Countdown timer
   useEffect(() => {
@@ -49,14 +38,6 @@ const Index = () => {
     setCountdown(settings.delaySeconds);
   };
 
-  // Disparo desde el Apple Watch (vía plugin nativo)
-  useWatchTrigger(() => {
-    if (state === "idle") {
-      setState("countdown");
-      setCountdown(settings.delaySeconds);
-    }
-  });
-
   const cancelCall = () => {
     setState("idle");
     setCountdown(0);
@@ -65,7 +46,7 @@ const Index = () => {
   const answerCall = () => setState("active");
   const hangUp = () => setState("idle");
 
-  // Auto retry: if ringing not answered within 20s, wait 60s and ring again
+  // Auto retry: si no contestan en 20s, espera 60s y vuelve a sonar
   useEffect(() => {
     if (state !== "retry-wait") return;
     const t = setTimeout(() => setState("ringing"), 60000);
@@ -78,7 +59,6 @@ const Index = () => {
     return (
       <IncomingCallScreen
         callerName={settings.callerName}
-        callerLabel={settings.callerLabel}
         callerPhoto={settings.callerPhoto}
         locked={settings.lockedScreen}
         onAnswer={answerCall}
@@ -100,98 +80,97 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 pt-12 pb-4">
-        <h1 className="text-xl font-semibold text-foreground">FakeCall</h1>
+      {/* Header con ajustes */}
+      <header className="flex items-center justify-end px-6 pt-12 pb-4">
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center"
+          className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-95 transition-transform"
+          aria-label="Ajustes"
         >
           <Settings className="w-5 h-5 text-muted-foreground" />
         </button>
       </header>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6 gap-8">
+      <div className="flex-1 flex flex-col items-center px-6 pb-12">
         {showSettings ? (
-          <div className="w-full max-w-sm animate-slide-up">
-            <h2 className="text-lg font-medium text-foreground mb-6">Configuración</h2>
+          /* Pantalla de ajustes */
+          <div className="w-full max-w-sm flex flex-col gap-6 animate-slide-up">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium text-foreground">Ajustes / Settings</h2>
+            </div>
             <SettingsPanel settings={settings} onChange={setSettings} />
             <button
               onClick={() => setShowSettings(false)}
-              className="w-full mt-8 py-3 rounded-xl bg-primary text-primary-foreground font-medium active:scale-[0.98] transition-transform"
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-medium active:scale-[0.98] transition-transform"
             >
-              Guardar
+              Guardar / Save
             </button>
           </div>
         ) : state === "countdown" ? (
-          <div className="flex flex-col items-center gap-6 animate-slide-up">
-            <div className="w-32 h-32 rounded-full border-4 border-call-green flex items-center justify-center">
-              <span className="text-5xl font-light text-call-green">{countdown}</span>
+          /* Cuenta atrás */
+          <div className="flex-1 flex flex-col items-center justify-center gap-8 animate-slide-up">
+            <div className="w-36 h-36 rounded-full border-[6px] border-call-green flex items-center justify-center shadow-lg shadow-call-green/20">
+              <span className="text-6xl font-light text-call-green tabular-nums">{countdown}</span>
             </div>
-            <p className="text-muted-foreground text-center">
-              Llamada entrante de <span className="text-foreground font-medium">{settings.callerName}</span>
+            <p className="text-muted-foreground text-center text-lg">
+              Llamada de <span className="text-foreground font-semibold">{settings.callerName}</span>
             </p>
             <button
               onClick={cancelCall}
-              className="px-8 py-3 rounded-xl bg-call-red text-primary-foreground font-medium active:scale-[0.98] transition-transform"
+              className="px-10 py-3.5 rounded-2xl bg-call-red text-white font-medium text-base active:scale-[0.98] transition-transform shadow-lg shadow-call-red/25"
             >
-              Cancelar
+              Cancelar / Cancel
             </button>
           </div>
         ) : state === "retry-wait" ? (
-          <div className="flex flex-col items-center gap-6 animate-slide-up">
-            <div className="w-32 h-32 rounded-full border-4 border-call-blue flex items-center justify-center">
-              <Phone className="w-10 h-10 text-call-blue" />
+          /* Espera de reintento */
+          <div className="flex-1 flex flex-col items-center justify-center gap-8 animate-slide-up">
+            <div className="w-36 h-36 rounded-full border-[6px] border-call-blue flex items-center justify-center shadow-lg shadow-call-blue/20">
+              <Phone className="w-12 h-12 text-call-blue" />
             </div>
-            <p className="text-muted-foreground text-center max-w-[260px]">
-              Reintentando llamada en 1 minuto...
+            <p className="text-muted-foreground text-center text-lg max-w-[280px]">
+              Reintentando en 1 minuto...
               <br />
-              <span className="text-muted-foreground/70">Retrying call in 1 minute…</span>
+              <span className="text-muted-foreground/60 text-base">Retrying in 1 minute…</span>
             </p>
             <button
               onClick={cancelCall}
-              className="px-8 py-3 rounded-xl bg-call-red text-primary-foreground font-medium active:scale-[0.98] transition-transform"
+              className="px-10 py-3.5 rounded-2xl bg-call-red text-white font-medium text-base active:scale-[0.98] transition-transform shadow-lg shadow-call-red/25"
             >
-              Cancelar
+              Cancelar / Cancel
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-8">
-            {/* Watch trigger simulation */}
+          /* Pantalla principal — simple y obvia */
+          <div className="flex-1 flex flex-col items-center justify-center gap-10 w-full max-w-sm">
+            {/* Botón principal: activar llamada */}
             <button
-              onClick={handleWatchTap}
-              className="w-28 h-28 rounded-full bg-secondary border-2 border-border flex items-center justify-center active:scale-95 transition-transform select-none"
+              onClick={triggerCall}
+              className="w-56 h-56 rounded-full bg-call-red flex items-center justify-center shadow-2xl shadow-call-red/30 active:scale-90 transition-transform duration-150"
+              aria-label="Activar llamada falsa"
             >
-              <Watch className="w-12 h-12 text-muted-foreground" />
+              <Phone className="w-20 h-20 text-white" strokeWidth={1.5} />
             </button>
-            <p className="text-muted-foreground text-sm text-center max-w-[250px]">
-              Toca dos veces rápido para activar llamada falsa
-              <br />
-              <span className="text-muted-foreground/70">Tap twice quickly to activate fake call</span>
-            </p>
 
-            <div className="w-full max-w-xs border-t border-border pt-6 mt-2">
-              <button
-                onClick={triggerCall}
-                className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-primary text-primary-foreground font-medium active:scale-[0.98] transition-transform"
-              >
-                <Phone className="w-5 h-5" />
-                Activar llamada ({settings.delaySeconds}s)
-              </button>
+            <div className="text-center space-y-2">
+              <p className="text-foreground text-xl font-semibold">
+                {settings.callerName}
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Toca para llamada falsa / Tap for fake call
+              </p>
             </div>
 
-            {/* Info */}
-            <div className="flex items-start gap-3 bg-secondary rounded-xl p-4 max-w-xs">
-              <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Configura el nombre y el retardo en ajustes. La llamada sonará de forma realista con vibración.
-              </p>
+            {/* Indicador de Watch conectado (estético) */}
+            <div className="flex items-center gap-2 bg-secondary rounded-full px-4 py-2">
+              <Watch className="w-4 h-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                También desde Apple Watch / From Apple Watch too
+              </span>
             </div>
           </div>
         )}
       </div>
     </div>
   );
-};
-
-export default Index;
+}

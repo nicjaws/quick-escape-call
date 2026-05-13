@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 
 interface IncomingCallScreenProps {
   callerName: string;
-  callerLabel: string;
   callerPhoto?: string;
   locked?: boolean;
   onAnswer: () => void;
@@ -13,7 +12,6 @@ interface IncomingCallScreenProps {
 
 export default function IncomingCallScreen({
   callerName,
-  callerLabel,
   callerPhoto,
   locked = false,
   onAnswer,
@@ -145,7 +143,7 @@ export default function IncomingCallScreen({
 
       {/* Caller info */}
       <div className="relative flex flex-col items-center pt-10 gap-1">
-        <p className="text-call-blue text-2xl font-light">{callerLabel}</p>
+        <p className="text-call-blue text-2xl font-light">iPhone</p>
         <h1 className="text-[64px] leading-none font-light text-call-blue">{callerName}</h1>
       </div>
 
