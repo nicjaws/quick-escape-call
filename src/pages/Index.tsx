@@ -78,7 +78,6 @@ const Index = () => {
     return (
       <IncomingCallScreen
         callerName={settings.callerName}
-        callerLabel={settings.callerLabel}
         callerPhoto={settings.callerPhoto}
         locked={settings.lockedScreen}
         onAnswer={answerCall}
