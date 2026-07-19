@@ -169,6 +169,15 @@ export default function Index() {
                 También desde Apple Watch / From Apple Watch too
               </span>
             </div>
+
+            {/* Botón oculto de test: simula el disparo real del Apple Watch */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("fakecall:trigger"))}
+              className="text-[11px] text-muted-foreground/40 underline underline-offset-4 active:text-muted-foreground"
+              aria-label="Simular Apple Watch"
+            >
+              Simular Apple Watch / Simulate Watch
+            </button>
           </div>
         )}
       </div>
