@@ -1,97 +1,59 @@
 import SwiftUI
+import Combine
 import WatchConnectivity
+import WatchKit
 
-struct ContentView: View {
-    @State private var tapCount = 0
-    @State private var lastTapTime: Date?
-    @State private var statusMessage = "Listo"
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "phone.fill")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 40, height: 40)
-                .foregroundColor(.red)
-            
-            Text("FakeCall")
-                .font(.headline)
-            
-            Text(statusMessage)
-                .font(.caption)
-                .foregroundColor(.gray)
-            
-            // Boton grande para 2 toques rapidos
-            Button(action: handleTap) {
-                ZStack {
-                    Circle()
-                        .fill(Color.red.opacity(0.2))
-                        .frame(width: 80, height: 80)
-                    Image(systemName: "phone.fill")
-                        .font(.title2)
-                        .foregroundColor(.red)
-                }
-            }
-            .buttonStyle(PlainButtonStyle())
-            
-            VStack(spacing: 2) {
-                Text("Toca dos veces rápido para activar llamada falsa")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-                    .multilineTextAlignment(.center)
-                Text("Tap twice quickly to activate fake call")
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-                    .multilineTextAlignment(.center)
-            }
+class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
+    static let shared = WatchSession()
+    override init() {
+        super.init()
+        if WCSession.isSupported() {
+            WCSession.default.delegate = self
+            WCSession.default.activate()
         }
     }
-    
-    private func handleTap() {
-        let now = Date()
-        let interval = lastTapTime.map { now.timeIntervalSince($0) } ?? 1.0
-        
-        if interval < 0.6 {
-            tapCount += 1
-            if tapCount >= 1 {
-                triggerFakeCall()
-                tapCount = 0
-            }
-        } else {
-            tapCount = 0
-        }
-        
-        lastTapTime = now
-    }
-    
-    private func triggerFakeCall() {
-        statusMessage = "Enviando..."
-        
+    func session(_ s: WCSession, activationDidCompleteWith state: WCSessionActivationState, error: Error?) {}
+
+    func sendTrigger() {
+        let msg = ["action": "fakecall"]
         if WCSession.default.isReachable {
-            WCSession.default.sendMessage(
-                ["action": "fakecall"],
-                replyHandler: { _ in
-                    statusMessage = "Enviado"
-                },
-                errorHandler: { _ in
-                    statusMessage = "Error"
-                }
-            )
+            WCSession.default.sendMessage(msg, replyHandler: nil)
         } else {
-            // Fallback: UserDefaults para iOS leer en foreground
-            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "watch_fakecall_trigger")
-            statusMessage = "Guardado"
+            try? WCSession.default.updateApplicationContext(msg)
         }
-        
-        // Resetear mensaje despues de 2 segundos
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            statusMessage = "Listo"
-        }
+        WKInterfaceDevice.current().play(.success)
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
+struct ContentView: View {
+    @StateObject private var session = WatchSession.shared
+    @State private var taps = 0
+    @State private var lastTap = Date.distantPast
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("FakeCall").font(.headline)
+            Button(action: handleTap) {
+                Image(systemName: "phone.fill")
+                    .font(.system(size: 38))
+                    .frame(maxWidth: .infinity, minHeight: 90)
+            }
+            .tint(.red)
+            Text("Toca 2 veces").font(.caption2).foregroundColor(.gray)
+        }
+    }
+
+    private func handleTap() {
+        let now = Date()
+        if now.timeIntervalSince(lastTap) < 0.8 {
+            taps += 1
+        } else {
+            taps = 1
+        }
+        lastTap = now
+        if taps >= 2 {
+            taps = 0
+            session.sendTrigger()
+        }
     }
 }
