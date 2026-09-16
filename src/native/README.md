@@ -1,67 +1,112 @@
-# Guia para compilar FakeCall con Apple Watch
+# FakeCall — conectar el proyecto con Xcode (iPhone + Apple Watch)
+
+## Identificadores del proyecto (ya configurados)
+
+| Target | Bundle ID |
+|---|---|
+| iPhone (App) | `com.nicjaws.fakecall` |
+| Apple Watch (FakeCallWatch Watch App) | `com.nicjaws.fakecall.watch` |
+| Watch Tests | `com.nicjaws.fakecall.watch.tests` |
+| Watch UI Tests | `com.nicjaws.fakecall.watch.uitests` |
+
+El ID del Watch empieza con el ID del iPhone: es un requisito de Apple para
+poder incrustar la app del reloj dentro de la del movil.
+
+`capacitor.config.ts` usa `appId: 'com.nicjaws.fakecall'`, que coincide con el
+target principal de Xcode.
 
 ## Requisitos
-- Mac con Xcode 14+ instalado
-- iPhone fisico (WCSession no funciona en simulador)
-- Apple Watch emparejado con el iPhone
 
-## Pasos para compilar
+- Mac con Xcode 15+
+- Cuenta de Apple Developer (pagada, 99 USD/anio) para instalar en un dispositivo fisico
+- iPhone fisico + Apple Watch emparejado (WCSession **no** funciona entre simuladores)
 
-### 1. Preparar el proyecto
+## 1. Bajar el proyecto en tu Mac
+
 ```bash
+git clone https://github.com/nicjaws/fakecall.git
+cd fakecall
 npm install
-npx cap add ios
+```
+
+Si ya lo tenias:
+
+```bash
+git pull
+npm install
+```
+
+## 2. Generar la parte web y sincronizar con iOS
+
+```bash
 npm run build
 npx cap sync ios
+```
+
+`npm run build` crea `dist/` y `npx cap sync ios` lo copia dentro del proyecto
+de Xcode (`ios/App/public`). Hay que repetir estos dos comandos cada vez que
+cambie algo de la interfaz.
+
+## 3. Abrir Xcode
+
+```bash
 npx cap open ios
 ```
 
-### 2. Agregar el Watch App en Xcode
-1. En Xcode, File > New > Target
-2. Selecciona "watchOS" > "App"
-3. Configura:
-   - Product Name: FakeCallWatch
-   - Team: Tu equipo de desarrollador
-   - Organization: tu nombre
-   - Language: Swift
-   - Interface: SwiftUI
-   - No marques "Include Notification Scene"
-4. Click "Finish", luego "Activate" cuando pregunte por el esquema
+Al abrir:
 
-### 3. Configurar Capabilities
-**iOS App target:**
-- Selecciona el target principal (App)
-- Ve a "Signing & Capabilities"
-- Agrega:
-  - App Groups (crea un grupo, ej: group.app.lovable.fakecall)
-  - Background Modes: marca "Background fetch" y "Remote notifications"
+1. Selecciona el target **App** (el del iPhone).
+2. Pestana **Signing & Capabilities**:
+   - Marca *Automatically manage signing*.
+   - Elige tu **Team** (tu cuenta de Apple Developer).
+   - Debe aparecer tu iPhone en *Provisioned Devices*.
+3. Selecciona el target **FakeCallWatch Watch App** y repite el paso 2
+   (mismo Team).
+4. Arrastra el iPhone como dispositivo de destino (arriba a la izquierda) y
+   pulsa **Run** (⌘R). Xcode instala la app del movil y la del reloj a la vez.
 
-**Watch App target:**
-- Selecciona el target del Watch
-- Ve a "Signing & Capabilities"
-- Agrega el MISMO "App Group" que el iPhone
+No hace falta configurar App Groups ni Background Modes: la comunicacion va
+por `WCSession`, que no necesita capacidades extra.
 
-### 4. Copiar archivos nativos
-1. Abre la carpeta del Watch App en Xcode (FakeCallWatch)
-2. Reemplaza `ContentView.swift` con el archivo de esta carpeta: `ContentView.swift`
-3. En el target iOS principal, agrega:
-   - `WatchBridgePlugin.swift`
-   - `WatchBridgePlugin.m`
-   - Ve a Build Settings > Swift Compiler - Search Paths > Import Paths y agrega `$(PROJECT_DIR)/App/App`
+## 4. Probar
 
-### 5. Conectar Watch con iPhone via WCSession
-En `ContentView.swift` del Watch, asegurate de que el `WCSession.default.sendMessage` use el mismo App Group que configuraste.
+1. Abre FakeCall en el iPhone (la app debe estar abierta o en segundo plano).
+2. En el Apple Watch abre FakeCall y toca 2 veces rapidas el boton rojo.
+3. El iPhone confirma con un pulgar 👍 y, tras el retardo configurado
+   (10 s por defecto), suena la llamada entrante.
 
-### 6. Compilar y probar
-1. Selecciona el target del Watch App
-2. Conecta tu iPhone fisico al Mac
-3. Asegurate de que el Apple Watch este emparejado y desbloqueado
-4. Click en "Run"
-5. En el Apple Watch, abre la app FakeCall
-6. Toca 2 veces rapido el boton rojo
-7. El iPhone deberia recibir la señal y activar la cuenta atras
+## Como viaja la senal
 
-## Notas importantes
-- WCSession requiere iPhone fisico, no funciona en simulador
-- Si no hay conectividad inmediata, el app usa UserDefaults como fallback (la app iPhone lo lee cada 2 segundos)
-- La app del Watch requiere solo 2 toques rapidos para activar la llamada falsa
+```
+Watch: ContentView.swift  →  WCSession  →  iPhone: WatchBridgePlugin.swift
+                                                     ↓
+                                    evento JS "fakecall:trigger" (window)
+                                                     ↓
+                                    src/hooks/useWatchTrigger.ts
+                                                     ↓
+                                    src/pages/Index.tsx (cuenta atras → llamada)
+```
+
+Archivos nativos del iPhone (ya anadidos al target *App*):
+- `ios/App/App/WatchBridgePlugin.swift`
+- `ios/App/App/WatchBridgePlugin.m`
+- `ios/App/App/App-Bridging-Header.h`
+
+Archivos del Watch:
+- `ios/App/FakeCallWatch Watch App/ContentView.swift`
+- `ios/App/FakeCallWatch Watch App/FakeCallWatchApp.swift`
+
+## Limitaciones honestas
+
+- Si la app del iPhone esta cerrada del todo, la senal se entrega cuando la
+  vuelves a abrir (via `updateApplicationContext`), no en el momento.
+- Apple no permite a una app de terceros hacer sonar de verdad el telefono
+  desde segundo plano sin una llamada real (CallKit esta reservado a las apps
+  de telefonia). Por eso la experiencia completa ocurre con la app abierta.
+
+## Antes de subir a App Store
+
+- `capacitor.config.ts` sin bloque `server` (ya esta limpio).
+- `npm run build && npx cap sync ios`.
+- Xcode: **Product → Archive**, luego *Distribute App* → App Store Connect.
+- Presentala como herramienta de seguridad personal, no como broma.
