@@ -5,3 +5,5 @@
 - [x] Favicon propio derivado del icono
 - [ ] Nicolas: `git pull` en el Mac → `npm install && npm run build && npx cap sync ios` → `npx cap open ios` → elegir Team en Signing & Capabilities → Run en el iPhone
 - [ ] Probar el disparo real desde el Apple Watch (2 toques) con hardware
+- [ ] Imagen de búsqueda en PNG (Apple rechazó el JPG)
+- [ ] Capturas App Store del iPhone con logo + capturas de llamada del usuario, según ejemplos
