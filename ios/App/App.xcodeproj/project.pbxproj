@@ -235,10 +235,12 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				A1B2C3002FC0000100ABCDEF /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A1B2C3032FC0000100ABCDEF /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -381,6 +383,11 @@
 			isa = PBXTargetDependency;
 			target = 37F8414D2FB10058007F8A3F /* FakeCallWatch Watch App */;
 			targetProxy = 37F841652FB10059007F8A3F /* PBXContainerItemProxy */;
+		};
+		A1B2C3032FC0000100ABCDEF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 37F8414D2FB10058007F8A3F /* FakeCallWatch Watch App */;
+			targetProxy = A1B2C3022FC0000100ABCDEF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
