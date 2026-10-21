@@ -1,5 +1,7 @@
 # Roadmap — FakeCall
 
+- [ ] Corregir recepción iPhone, registro del puente y confirmación/error de envío desde los dos toques del Watch
+- [ ] Verificar flujo de llamada y pruebas de regresión; compilación y enlace nativos pendientes del Mac de Nicolas
 - [x] Conectar el proyecto con Xcode (bundle IDs unificados en `com.nicjaws.fakecall`, plugin del Watch corregido, `npm run build && npx cap sync ios` ejecutado)
 - [x] Meter el AppIcon en Assets.xcassets del iPhone y del Apple Watch
 - [x] Favicon propio derivado del icono
