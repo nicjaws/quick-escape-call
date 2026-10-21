@@ -6,14 +6,36 @@
 //
 
 import Testing
+import Foundation
 @testable import FakeCallWatch_Watch_App
 
 struct FakeCallWatch_Watch_AppTests {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-        // Swift Testing Documentation
-        // https://developer.apple.com/documentation/testing
+    @Test func oneTapDoesNotTrigger() {
+        var detector = WatchDoubleTapDetector()
+        #expect(detector.registerTap(at: Date(timeIntervalSince1970: 100)) == false)
     }
 
+    @Test func twoTapsWithinPointEightSecondsTrigger() {
+        var detector = WatchDoubleTapDetector()
+        let start = Date(timeIntervalSince1970: 100)
+        #expect(detector.registerTap(at: start) == false)
+        #expect(detector.registerTap(at: start.addingTimeInterval(0.79)) == true)
+    }
+
+    @Test funcTwoSlowTapsDoNotTrigger() {
+        var detector = WatchDoubleTapDetector()
+        let start = Date(timeIntervalSince1970: 100)
+        #expect(detector.registerTap(at: start) == false)
+        #expect(detector.registerTap(at: start.addingTimeInterval(0.8)) == false)
+    }
+
+    @Test func nextTriggerNeedsTwoMoreTaps() {
+        var detector = WatchDoubleTapDetector()
+        let start = Date(timeIntervalSince1970: 100)
+        #expect(detector.registerTap(at: start) == false)
+        #expect(detector.registerTap(at: start.addingTimeInterval(0.2)) == true)
+        #expect(detector.registerTap(at: start.addingTimeInterval(0.3)) == false)
+        #expect(detector.registerTap(at: start.addingTimeInterval(0.4)) == true)
+    }
 }

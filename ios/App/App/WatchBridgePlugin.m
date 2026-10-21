@@ -1,5 +1,4 @@
 #import <Capacitor/Capacitor.h>
 
-CAP_PLUGIN(WatchBridgePlugin, "WatchBridge",
-    CAP_PLUGIN_METHOD(notifyTrigger, CAPPluginReturnPromise);
-)
+// Plugin metadata now lives in Swift (CAPBridgedPlugin).
+// Keep this source file for compatibility with existing Xcode target membership.

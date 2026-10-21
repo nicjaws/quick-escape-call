@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Settings, Phone, Watch } from "lucide-react";
 import { useCallSettings } from "@/hooks/useCallSettings";
 import { useWatchTrigger } from "@/hooks/useWatchTrigger";
@@ -13,14 +13,20 @@ export default function Index() {
   const [state, setState] = useState<AppState>("idle");
   const [showSettings, setShowSettings] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
-  // Disparo desde Apple Watch (plugin nativo)
-  useWatchTrigger(() => {
-    if (state === "idle") {
-      setState("countdown");
-      setCountdown(settings.delaySeconds);
-    }
-  });
+  // Both devices start the same flow; reject another request while busy.
+  const triggerCall = () => {
+    if (stateRef.current !== "idle") return false;
+    stateRef.current = "countdown";
+    setState("countdown");
+    setCountdown(settings.delaySeconds);
+    setShowSettings(false);
+    return true;
+  };
+
+  useWatchTrigger(triggerCall);
 
   // Countdown timer
   useEffect(() => {
@@ -32,11 +38,6 @@ export default function Index() {
     const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [state, countdown]);
-
-  const triggerCall = () => {
-    setState("countdown");
-    setCountdown(settings.delaySeconds);
-  };
 
   const cancelCall = () => {
     setState("idle");
