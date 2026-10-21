@@ -2,51 +2,92 @@ import Foundation
 import Capacitor
 import WatchConnectivity
 
-/// Puentes entre el Apple Watch (watchOS) y la app web de Capacitor (iOS).
-/// El Watch envia ["action": "fakecall"] y aqui se lanza el evento JS
-/// "fakecall:trigger" que escucha src/hooks/useWatchTrigger.ts.
 @objc(WatchBridgePlugin)
-public class WatchBridgePlugin: CAPPlugin, WCSessionDelegate {
+public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
+    public let identifier = "WatchBridgePlugin"
+    public let jsName = "WatchBridge"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "notifyTrigger", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "acknowledgeTrigger", returnType: CAPPluginReturnPromise)
+    ]
+
+    // Accessed only on the main queue, like Capacitor's event listener storage.
+    private var pendingReplies: [String: ([String: Any]) -> Void] = [:]
+    private var pendingRequests = Set<String>()
 
     public override func load() {
         guard WCSession.isSupported() else { return }
         WCSession.default.delegate = self
         WCSession.default.activate()
+        NSLog("[WatchBridge] Receiver registered")
     }
 
-    /// Tambien puede invocarse desde JavaScript: WatchBridge.notifyTrigger()
     @objc func notifyTrigger(_ call: CAPPluginCall) {
-        fireTrigger()
-        call.resolve()
+        DispatchQueue.main.async {
+            self.receive(["action": "fakecall", "requestId": UUID().uuidString])
+            call.resolve()
+        }
     }
 
-    private func fireTrigger() {
-        bridge?.triggerJSEvent(eventName: "fakecall:trigger", target: "window")
+    @objc func acknowledgeTrigger(_ call: CAPPluginCall) {
+        guard let requestId = call.getString("requestId") else {
+            call.reject("Missing requestId")
+            return
+        }
+        let accepted = call.getBool("accepted") ?? false
+        DispatchQueue.main.async {
+            // A timed-out request must not be confirmed afterwards.
+            guard self.pendingRequests.remove(requestId) != nil else {
+                call.resolve()
+                return
+            }
+            self.pendingReplies.removeValue(forKey: requestId)?(["accepted": accepted])
+            NSLog("[WatchBridge] iPhone activation accepted: %@", accepted.description)
+            call.resolve()
+        }
     }
 
-    // MARK: - WCSessionDelegate
+    private func receive(_ message: [String: Any],
+                         replyHandler: (([String: Any]) -> Void)? = nil) {
+        guard message["action"] as? String == "fakecall" else {
+            replyHandler?(["accepted": false])
+            return
+        }
+        let requestId = message["requestId"] as? String ?? UUID().uuidString
+        pendingRequests.insert(requestId)
+        if let replyHandler = replyHandler { pendingReplies[requestId] = replyHandler }
+        NSLog("[WatchBridge] Trigger received")
+        // Keep startup messages until React installs its listener.
+        notifyListeners("trigger", data: ["requestId": requestId], retainUntilConsumed: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+            guard self.pendingRequests.remove(requestId) != nil else { return }
+            self.pendingReplies.removeValue(forKey: requestId)?(["accepted": false])
+            NSLog("[WatchBridge] iPhone interface did not acknowledge the trigger")
+        }
+    }
 
     public func session(_ session: WCSession,
                         didReceiveMessage message: [String: Any]) {
-        if message["action"] as? String == "fakecall" {
-            DispatchQueue.main.async { self.fireTrigger() }
-        }
+        DispatchQueue.main.async { self.receive(message) }
     }
 
     public func session(_ session: WCSession,
-                        didReceiveApplicationContext context: [String: Any]) {
-        if context["action"] as? String == "fakecall" {
-            DispatchQueue.main.async { self.fireTrigger() }
-        }
+                        didReceiveMessage message: [String: Any],
+                        replyHandler: @escaping ([String: Any]) -> Void) {
+        DispatchQueue.main.async { self.receive(message, replyHandler: replyHandler) }
     }
 
     public func session(_ session: WCSession,
                         activationDidCompleteWith activationState: WCSessionActivationState,
-                        error: Error?) {}
+                        error: Error?) {
+        if let error = error {
+            NSLog("[WatchBridge] Activation failed: %@", error.localizedDescription)
+        } else {
+            NSLog("[WatchBridge] Session activated: %ld, paired: %d, Watch app installed: %d",
+                  activationState.rawValue, session.isPaired, session.isWatchAppInstalled)
+        }
+    }
 
     public func sessionDidBecomeInactive(_ session: WCSession) {}
-
-    public func sessionDidDeactivate(_ session: WCSession) {
-        session.activate()
-    }
+    public func sessionDidDeactivate(_ session: WCSession) { session.activate() }
 }

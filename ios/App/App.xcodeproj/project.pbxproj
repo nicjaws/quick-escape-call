@@ -10,6 +10,7 @@
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		37F841762FB1023A007F8A3F /* WatchBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F841752FB10232007F8A3F /* WatchBridgePlugin.swift */; };
 		37F841782FB10659007F8A3F /* WatchBridgePlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 37F841772FB1064F007F8A3F /* WatchBridgePlugin.m */; };
+		A1B2C3042FC0000100ABCDEF /* AppBridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3052FC0000100ABCDEF /* AppBridgeViewController.swift */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -65,6 +66,7 @@
 		37F841642FB10059007F8A3F /* FakeCallWatch Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "FakeCallWatch Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		37F841752FB10232007F8A3F /* WatchBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridgePlugin.swift; sourceTree = "<group>"; };
 		37F841772FB1064F007F8A3F /* WatchBridgePlugin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WatchBridgePlugin.m; sourceTree = "<group>"; };
+		A1B2C3052FC0000100ABCDEF /* AppBridgeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBridgeViewController.swift; sourceTree = "<group>"; };
 		37F841792FB10661007F8A3F /* App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "App-Bridging-Header.h"; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,6 +146,7 @@
 			children = (
 				37F841772FB1064F007F8A3F /* WatchBridgePlugin.m */,
 				37F841752FB10232007F8A3F /* WatchBridgePlugin.swift */,
+				A1B2C3052FC0000100ABCDEF /* AppBridgeViewController.swift */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -368,6 +371,7 @@
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				37F841762FB1023A007F8A3F /* WatchBridgePlugin.swift in Sources */,
 				37F841782FB10659007F8A3F /* WatchBridgePlugin.m in Sources */,
+				A1B2C3042FC0000100ABCDEF /* AppBridgeViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
