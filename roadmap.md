@@ -1,5 +1,6 @@
 # Roadmap — FakeCall
 
+- [ ] Activar tambien desde iPhone con dos toques, sin necesitar Apple Watch, y añadir pruebas de esa regla
 - [x] Corregir recepción iPhone, registro del puente y confirmación/error de envío desde los dos toques del Watch
 - [x] Explicar «Application context data is nil» y evitar usar contexto almacenado como señal de activación
 - [x] Verificar recepción con pruebas React (8 correctas) y flujo simulado visible hasta contestar; no verifica WCSession
