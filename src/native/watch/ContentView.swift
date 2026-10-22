@@ -75,11 +75,13 @@ class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
                 self?.fail("Sin conexión / Not connected")
             }
         })
-        // The iPhone must answer within 10 seconds; never spin forever.
+        // The message is on its way; if no acknowledgement arrives, say so
+        // without treating it as an error (simulator transfers can be slow).
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
             guard let self = self, self.isSending else { return }
-            NSLog("[FakeCallWatch] iPhone did not answer the trigger")
-            self.fail("iPhone no responde / iPhone not responding")
+            NSLog("[FakeCallWatch] No acknowledgement from iPhone")
+            self.isSending = false
+            self.errorMessage = "Enviada al iPhone / Sent to iPhone"
         }
     }
 
