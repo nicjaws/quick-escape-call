@@ -9,6 +9,7 @@ import Testing
 import Foundation
 @testable import FakeCallWatch_Watch_App
 
+@MainActor
 struct FakeCallWatch_Watch_AppTests {
 
     @Test func oneTapDoesNotTrigger() {
@@ -23,7 +24,7 @@ struct FakeCallWatch_Watch_AppTests {
         #expect(detector.registerTap(at: start.addingTimeInterval(0.79)) == true)
     }
 
-    @Test funcTwoSlowTapsDoNotTrigger() {
+    @Test func twoSlowTapsDoNotTrigger() {
         var detector = WatchDoubleTapDetector()
         let start = Date(timeIntervalSince1970: 100)
         #expect(detector.registerTap(at: start) == false)

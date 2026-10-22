@@ -21,7 +21,7 @@ export function useWatchTrigger(onTrigger: () => boolean | void) {
       if (disposed || !event.requestId) return;
       let accepted = results.get(event.requestId);
       if (accepted === undefined) {
-        accepted = onTriggerRef.current() !== false;
+        accepted = event.expiresAt > Date.now() && onTriggerRef.current() !== false;
         results.set(event.requestId, accepted);
         if (results.size > 32) {
           const oldest = results.keys().next().value;
