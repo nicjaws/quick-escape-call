@@ -5,6 +5,7 @@ import { useWatchTrigger } from "@/hooks/useWatchTrigger";
 import SettingsPanel from "@/components/SettingsPanel";
 import IncomingCallScreen from "@/components/IncomingCallScreen";
 import ActiveCallScreen from "@/components/ActiveCallScreen";
+import { Button } from "@/components/ui/button";
 
 type AppState = "idle" | "countdown" | "ringing" | "retry-wait" | "active";
 
@@ -15,6 +16,7 @@ export default function Index() {
   const [countdown, setCountdown] = useState(0);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const lastPhoneTap = useRef<number | null>(null);
 
   // Both devices start the same flow; reject another request while busy.
   const triggerCall = () => {
@@ -27,6 +29,16 @@ export default function Index() {
   };
 
   useWatchTrigger(triggerCall);
+
+  const handlePhoneTap = () => {
+    const now = Date.now();
+    if (lastPhoneTap.current !== null && now - lastPhoneTap.current < 800) {
+      lastPhoneTap.current = null;
+      triggerCall();
+    } else {
+      lastPhoneTap.current = now;
+    }
+  };
 
   // Countdown timer
   useEffect(() => {
@@ -146,20 +158,20 @@ export default function Index() {
           /* Pantalla principal — simple y obvia */
           <div className="flex-1 flex flex-col items-center justify-center gap-10 w-full max-w-sm">
             {/* Botón principal: activar llamada */}
-            <button
-              onClick={triggerCall}
-              className="w-56 h-56 rounded-full bg-call-red flex items-center justify-center shadow-2xl shadow-call-red/30 active:scale-90 transition-transform duration-150"
+            <Button
+              onClick={handlePhoneTap}
+              className="w-56 h-56 p-0 rounded-full bg-call-red hover:bg-call-red text-primary-foreground flex items-center justify-center shadow-2xl shadow-call-red/30 active:scale-90 transition-transform duration-150"
               aria-label="Activar llamada falsa"
             >
-              <Phone className="w-20 h-20 text-white" strokeWidth={1.5} />
-            </button>
+              <Phone className="!w-20 !h-20" strokeWidth={1.5} />
+            </Button>
 
             <div className="text-center space-y-2">
               <p className="text-foreground text-xl font-semibold">
                 {settings.callerName}
               </p>
               <p className="text-muted-foreground text-sm">
-                Toca para llamada falsa / Tap for fake call
+                Toca 2 veces / Tap twice
               </p>
             </div>
 

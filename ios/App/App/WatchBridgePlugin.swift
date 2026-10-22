@@ -58,7 +58,8 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         if let replyHandler = replyHandler { pendingReplies[requestId] = replyHandler }
         NSLog("[WatchBridge] Trigger received")
         // Keep startup messages until React installs its listener.
-        notifyListeners("trigger", data: ["requestId": requestId], retainUntilConsumed: true)
+        let expiresAt = Date().addingTimeInterval(8).timeIntervalSince1970 * 1000
+        notifyListeners("trigger", data: ["requestId": requestId, "expiresAt": expiresAt], retainUntilConsumed: true)
         DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
             guard self.pendingRequests.remove(requestId) != nil else { return }
             self.pendingReplies.removeValue(forKey: requestId)?(["accepted": false])

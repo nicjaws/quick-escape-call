@@ -7,3 +7,4 @@
 - Send discrete Watch activations with `WCSession.sendMessage` and a reply/error handler, not cached application context; an unavailable connection must not create a surprise call later.
 - Keep the deliverable native sources under `src/native/watch` identical to their corresponding Xcode sources; the Xcode targets compile the copies under `ios/App`.
 - Keep WatchConnectivity diagnostics local and log no user data; validate native builds and device connectivity on a Mac, not through browser simulation.
+- Keep iPhone double-tap input independent of Watch connectivity and feed both device inputs into the same guarded call flow; a Watch must not be required for local activation.

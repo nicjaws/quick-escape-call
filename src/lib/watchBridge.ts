@@ -2,6 +2,7 @@ import { registerPlugin, type PluginListenerHandle } from "@capacitor/core";
 
 export interface WatchTriggerEvent {
   requestId: string;
+  expiresAt: number;
 }
 
 interface WatchBridgePlugin {
