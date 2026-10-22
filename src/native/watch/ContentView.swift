@@ -57,7 +57,7 @@ class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
         WCSession.default.sendMessage(message, replyHandler: { [weak self] reply in
             let accepted = reply["accepted"] as? Bool ?? false
             Task { @MainActor in
-                guard let self = self else { return }
+                guard let self = self, self.isSending else { return }
                 self.isSending = false
                 guard accepted else {
                     self.fail("iPhone no disponible / iPhone not ready")
@@ -75,6 +75,12 @@ class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
                 self?.fail("Sin conexión / Not connected")
             }
         })
+        // The iPhone must answer within 10 seconds; never spin forever.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
+            guard let self = self, self.isSending else { return }
+            NSLog("[FakeCallWatch] iPhone did not answer the trigger")
+            self.fail("iPhone no responde / iPhone not responding")
+        }
     }
 
     private func fail(_ message: String) {
