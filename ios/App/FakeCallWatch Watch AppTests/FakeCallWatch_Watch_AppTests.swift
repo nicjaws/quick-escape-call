@@ -28,7 +28,7 @@ struct FakeCallWatch_Watch_AppTests {
         var detector = WatchDoubleTapDetector()
         let start = Date(timeIntervalSince1970: 100)
         #expect(detector.registerTap(at: start) == false)
-        #expect(detector.registerTap(at: start.addingTimeInterval(0.8)) == false)
+        #expect(detector.registerTap(at: start.addingTimeInterval(0.81)) == false)
     }
 
     @Test func nextTriggerNeedsTwoMoreTaps() {

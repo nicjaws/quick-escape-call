@@ -1,8 +1,9 @@
 # Roadmap — FakeCall
 
-- [ ] Corregir recepción iPhone, registro del puente y confirmación/error de envío desde los dos toques del Watch
-- [ ] Explicar «Application context data is nil» y evitar usar contexto almacenado como señal de activación
-- [ ] Verificar flujo de llamada y pruebas de regresión; compilación y enlace nativos pendientes del Mac de Nicolas
+- [x] Corregir recepción iPhone, registro del puente y confirmación/error de envío desde los dos toques del Watch
+- [x] Explicar «Application context data is nil» y evitar usar contexto almacenado como señal de activación
+- [x] Verificar recepción con pruebas React (8 correctas) y flujo simulado visible hasta contestar; no verifica WCSession
+- [ ] Compilar los targets y ejecutar las pruebas Watch en el Mac de Nicolas (este entorno no dispone de Xcode)
 - [x] Conectar el proyecto con Xcode (bundle IDs unificados en `com.nicjaws.fakecall`, plugin del Watch corregido, `npm run build && npx cap sync ios` ejecutado)
 - [x] Meter el AppIcon en Assets.xcassets del iPhone y del Apple Watch
 - [x] Favicon propio derivado del icono
