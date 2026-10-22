@@ -70,6 +70,8 @@ por `WCSession`, que no necesita capacidades extra.
 
 ## 4. Probar
 
+Sin reloj: toca dos veces el boton rojo de la app del iPhone dentro de 0.8 segundos. La llamada se activa localmente con el mismo retardo, sin depender de WCSession.
+
 1. Ejecuta primero el esquema **App** para reinstalar tambien el receptor actualizado del iPhone. Deja FakeCall abierta, en primer plano, sin una llamada ni retardo activos.
 2. En el Apple Watch abre FakeCall y toca 2 veces rapidas el boton rojo.
 3. El reloj muestra 👍 durante un segundo **solo cuando la interfaz del iPhone confirma la activacion**. El iPhone muestra tambien 👍 y, tras el retardo configurado (10 s por defecto), aparece la llamada entrante.
