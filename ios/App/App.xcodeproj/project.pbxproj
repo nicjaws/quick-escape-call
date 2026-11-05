@@ -156,6 +156,7 @@
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
+				A1B2C3112FC0000200ABCDEF /* ringtone.caf */,
 				50B271D01FEDC1A000F3C39B /* public */,
 				37F841792FB10661007F8A3F /* App-Bridging-Header.h */,
 			);
@@ -339,6 +340,7 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				A1B2C3102FC0000200ABCDEF /* ringtone.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
