@@ -10,6 +10,7 @@
 - [x] Favicon propio derivado del icono
 - [ ] Nicolas: `git pull` en el Mac → `npm install && npm run build && npx cap sync ios` → `npx cap open ios` → elegir Team en Signing & Capabilities → Run en el iPhone
 - [ ] Probar el disparo real desde el Apple Watch (2 toques) con hardware
-- [ ] Decidir con Nicolas: activación con app cerrada/bloqueada vía notificación local programada (CallKit+PushKit descartado: requiere servidor y Apple lo rechaza para este uso)
+- [x] Activación con app cerrada/bloqueada: notificación local programada con timbre (ringtone.caf), nombre y retardo sincronizados; al tocarla abre la llamada directa (12 pruebas correctas)
+- [ ] Nicolas: `git pull` → `npm run build && npx cap sync ios` → Run en iPhone real; aceptar el permiso de notificaciones la primera vez; probar 2 toques en el Watch con la app del iPhone cerrada
 - [x] Imagen de búsqueda convertida a PNG; aceptación de Apple pendiente de comprobar al cargar
 - [x] Tres composiciones iPhone 1290×2796 con logo y capturas aportadas; inspeccionadas y agrupadas en Files
