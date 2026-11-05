@@ -133,8 +133,8 @@ export default function IncomingCallScreen({
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-black animate-slide-up text-white"
       style={{
-        paddingTop: "env(safe-area-inset-top, 60px)",
-        paddingBottom: "env(safe-area-inset-bottom, 40px)",
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + 24px)",
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)",
         ...bgStyle,
       }}
     >

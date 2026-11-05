@@ -34,12 +34,15 @@ export default function Index() {
 
   useWatchTrigger(triggerCall);
 
-  // Ask once for notification permission and mirror the settings natively so
-  // a background wake can schedule the fallback call notification.
-  useEffect(() => {
+  // Ask for notification permission on launch and again on the first user tap
+  // (the bridge is guaranteed ready then, and iOS shows the system dialog).
+  const askNotificationPermission = () => {
     if (Capacitor.getPlatform() !== "ios") return;
-    void WatchBridge.requestNotificationPermission().catch(() => undefined);
-  }, []);
+    void WatchBridge.requestNotificationPermission()
+      .then(({ granted }) => console.log("Notification permission:", granted))
+      .catch((error: unknown) => console.error("Notification permission failed:", error));
+  };
+  useEffect(askNotificationPermission, []);
 
   useEffect(() => {
     if (Capacitor.getPlatform() !== "ios") return;
@@ -50,6 +53,7 @@ export default function Index() {
   }, [settings.callerName, settings.delaySeconds]);
 
   const handlePhoneTap = () => {
+    askNotificationPermission();
     const now = Date.now();
     if (lastPhoneTap.current !== null && now - lastPhoneTap.current < 800) {
       lastPhoneTap.current = null;
