@@ -55,8 +55,8 @@ export default function ActiveCallScreen({ callerName, callerPhoto, onHangUp }: 
     <div
       className="fixed inset-0 z-50 flex flex-col bg-black select-none text-white"
       style={{
-        paddingTop: "env(safe-area-inset-top, 50px)",
-        paddingBottom: "env(safe-area-inset-bottom, 30px)",
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + 20px)",
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         ...bgStyle,
       }}
     >
