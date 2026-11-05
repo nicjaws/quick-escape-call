@@ -68,12 +68,21 @@ describe("useWatchTrigger", () => {
     expect(bridge.addListener).toHaveBeenCalledTimes(1);
   });
 
-  it("rejects expired startup events without triggering a surprise call", () => {
+  it("ignores expired startup events without triggering a surprise call", () => {
     const onTrigger = vi.fn(() => true);
     renderHook(() => useWatchTrigger(onTrigger));
     act(() => receive({ requestId: "expired", expiresAt: Date.now() - 1 }));
     expect(onTrigger).not.toHaveBeenCalled();
-    expect(bridge.acknowledgeTrigger).toHaveBeenCalledWith({ requestId: "expired", accepted: false });
+    // No acknowledgement: the native fallback notification must stay scheduled.
+    expect(bridge.acknowledgeTrigger).not.toHaveBeenCalled();
+  });
+
+  it("passes the immediate flag from a notification tap to the callback", () => {
+    const onTrigger = vi.fn(() => true);
+    renderHook(() => useWatchTrigger(onTrigger));
+    act(() => receive({ requestId: "tap", expiresAt: Date.now() + 8000, immediate: true }));
+    expect(onTrigger).toHaveBeenCalledWith(true);
+    expect(bridge.acknowledgeTrigger).toHaveBeenCalledWith({ requestId: "tap", accepted: true });
   });
 
   it("keeps browser simulation independent from the native plugin", () => {
