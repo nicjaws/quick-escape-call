@@ -115,17 +115,26 @@ Archivos nativos del iPhone (ya anadidos al target *App*):
 - `ios/App/App/Base.lproj/Main.storyboard` (usa el controlador de la app)
 - `ios/App/App/WatchBridgePlugin.m` (archivo de compatibilidad sin registro duplicado)
 - `ios/App/App/App-Bridging-Header.h`
+- `ios/App/App/ringtone.caf` (timbre de la notificacion de respaldo)
 
 Archivos del Watch:
 - `ios/App/FakeCallWatch Watch App/ContentView.swift`
 - `ios/App/FakeCallWatch Watch App/FakeCallWatchApp.swift`
 
+## Activacion con la app cerrada o el iPhone bloqueado
+
+- Al recibir los dos toques del reloj, el iPhone programa una **notificacion local** con el nombre del contacto, el retardo configurado y el timbre `ringtone.caf`. Si la app esta abierta, cancela esa notificacion y muestra la llamada completa como siempre.
+- Si la app esta cerrada o el iPhone bloqueado, la notificacion aparece sola tras el retardo; al tocarla, la app se abre directamente en la pantalla de llamada entrante.
+- La app pide permiso de notificaciones la primera vez; hay que aceptarlo para que este respaldo funcione.
+- La app sincroniza nombre y retardo al nativo con `syncSettings` cada vez que cambian los ajustes.
+
 ## Limitaciones honestas
 
-- Si la app del iPhone no esta disponible, no se garantiza una llamada instantanea y el reloj no confirma el envio. El iPhone debe permanecer en primer plano para validar este flujo de extremo a extremo.
-- Apple no permite a una app de terceros hacer sonar de verdad el telefono
-  desde segundo plano sin una llamada real (CallKit esta reservado a las apps
-  de telefonia). Por eso la experiencia completa ocurre con la app abierta.
+- Si la app se cerro deslizandola hacia arriba (forzar cierre), iOS no la despierta: hay que abrirla una vez para que el reloj vuelva a activarla.
+- El sonido de una notificacion es mas corto que el timbre completo de la app abierta.
+- Apple no permite a una app de terceros mostrar la pantalla de llamada real
+  sobre el bloqueo sin una llamada verdadera (CallKit esta reservado a las apps
+  de telefonia y exige un servidor). Por eso el respaldo usa notificaciones.
 
 Las pruebas automatizadas de React se ejecutan con `npm test`. Las pruebas de los dos toques del reloj estan en **FakeCallWatch Watch AppTests**; ejecutalas en Xcode. Este entorno no dispone de Xcode para compilar ni verificar la conexion nativa.
 
