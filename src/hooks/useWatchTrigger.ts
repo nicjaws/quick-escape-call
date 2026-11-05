@@ -5,8 +5,9 @@ import { WatchBridge, type WatchTriggerEvent } from "@/lib/watchBridge";
 /**
  * The native listener retains early Watch messages until React is ready.
  * The window event remains available for the existing simulation button.
+ * `immediate` events (fallback notification taps) skip the countdown.
  */
-export function useWatchTrigger(onTrigger: () => boolean | void) {
+export function useWatchTrigger(onTrigger: (immediate?: boolean) => boolean | void) {
   const onTriggerRef = useRef(onTrigger);
   onTriggerRef.current = onTrigger;
 
@@ -19,9 +20,13 @@ export function useWatchTrigger(onTrigger: () => boolean | void) {
 
     const receiveTrigger = (event: WatchTriggerEvent) => {
       if (disposed || !event.requestId) return;
+      // Stale retained event (e.g. the app was woken in the background hours
+      // ago): ignore it silently so no surprise call starts and the fallback
+      // notification, if still pending, stays scheduled.
+      if (event.expiresAt <= Date.now()) return;
       let accepted = results.get(event.requestId);
       if (accepted === undefined) {
-        accepted = event.expiresAt > Date.now() && onTriggerRef.current() !== false;
+        accepted = onTriggerRef.current(event.immediate === true) !== false;
         results.set(event.requestId, accepted);
         if (results.size > 32) {
           const oldest = results.keys().next().value;
