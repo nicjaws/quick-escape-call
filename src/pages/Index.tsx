@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import { Capacitor } from "@capacitor/core";
 import { Settings, Phone, Watch } from "lucide-react";
+import { WatchBridge } from "@/lib/watchBridge";
 import { useCallSettings } from "@/hooks/useCallSettings";
 import { useWatchTrigger } from "@/hooks/useWatchTrigger";
 import SettingsPanel from "@/components/SettingsPanel";
@@ -19,16 +21,33 @@ export default function Index() {
   const lastPhoneTap = useRef<number | null>(null);
 
   // Both devices start the same flow; reject another request while busy.
-  const triggerCall = () => {
+  // `immediate` (fallback notification tap) skips the countdown.
+  const triggerCall = (immediate = false) => {
     if (stateRef.current !== "idle") return false;
-    stateRef.current = "countdown";
-    setState("countdown");
+    const next: AppState = immediate ? "ringing" : "countdown";
+    stateRef.current = next;
+    setState(next);
     setCountdown(settings.delaySeconds);
     setShowSettings(false);
     return true;
   };
 
   useWatchTrigger(triggerCall);
+
+  // Ask once for notification permission and mirror the settings natively so
+  // a background wake can schedule the fallback call notification.
+  useEffect(() => {
+    if (Capacitor.getPlatform() !== "ios") return;
+    void WatchBridge.requestNotificationPermission().catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (Capacitor.getPlatform() !== "ios") return;
+    void WatchBridge.syncSettings({
+      callerName: settings.callerName,
+      delaySeconds: settings.delaySeconds,
+    }).catch(() => undefined);
+  }, [settings.callerName, settings.delaySeconds]);
 
   const handlePhoneTap = () => {
     const now = Date.now();

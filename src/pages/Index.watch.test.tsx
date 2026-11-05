@@ -7,6 +7,8 @@ const native = vi.hoisted(() => ({
   getPlatform: vi.fn(() => "ios"),
   addListener: vi.fn(),
   acknowledgeTrigger: vi.fn(() => Promise.resolve()),
+  syncSettings: vi.fn(() => Promise.resolve()),
+  requestNotificationPermission: vi.fn(() => Promise.resolve({ granted: true })),
   remove: vi.fn(() => Promise.resolve()),
 }));
 vi.mock("@capacitor/core", () => ({ Capacitor: { getPlatform: native.getPlatform } }));
