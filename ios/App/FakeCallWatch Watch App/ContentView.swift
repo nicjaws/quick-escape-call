@@ -40,54 +40,51 @@ class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
         }
     }
 
+    /// Stealth by design: the screen never changes after a trigger. The only
+    /// feedback is a haptic tap on the wrist — nobody looking at the watch
+    /// can tell anything happened.
     func sendTrigger() {
-        guard !isSending, !showConfirmation else { return }
-        errorMessage = nil
+        guard !isSending else { return }
         guard WCSession.isSupported(), WCSession.default.activationState == .activated else {
-            fail("Conectando / Connecting")
+            fail()
             return
         }
         guard WCSession.default.isReachable else {
-            fail("Abre FakeCall en iPhone / Open FakeCall on iPhone")
             NSLog("[FakeCallWatch] iPhone is not reachable")
+            fail()
             return
         }
         isSending = true
+        WKInterfaceDevice.current().play(.click) // discreet "sent" tap
         let message = ["action": "fakecall", "requestId": UUID().uuidString]
         WCSession.default.sendMessage(message, replyHandler: { [weak self] reply in
             let accepted = reply["accepted"] as? Bool ?? false
             Task { @MainActor in
                 guard let self = self, self.isSending else { return }
                 self.isSending = false
-                guard accepted else {
-                    self.fail("iPhone no disponible / iPhone not ready")
-                    return
-                }
-                self.showConfirmation = true
-                WKInterfaceDevice.current().play(.success)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self.showConfirmation = false
+                if accepted {
+                    WKInterfaceDevice.current().play(.success)
+                } else {
+                    self.fail()
                 }
             }
         }, errorHandler: { [weak self] error in
             NSLog("[FakeCallWatch] Send failed: %@", error.localizedDescription)
             Task { @MainActor in
-                self?.fail("Sin conexión / Not connected")
+                self?.fail()
             }
         })
-        // The message is on its way; if no acknowledgement arrives, say so
-        // without treating it as an error (simulator transfers can be slow).
+        // If no acknowledgement arrives (simulator transfers can be slow),
+        // stop tracking without any visible change.
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
             guard let self = self, self.isSending else { return }
             NSLog("[FakeCallWatch] No acknowledgement from iPhone")
             self.isSending = false
-            self.errorMessage = "Enviada al iPhone / Sent to iPhone"
         }
     }
 
-    private func fail(_ message: String) {
+    private func fail() {
         isSending = false
-        errorMessage = message
         WKInterfaceDevice.current().play(.failure)
     }
 }
