@@ -143,21 +143,27 @@ export default function Index() {
             </button>
           </div>
         ) : state === "countdown" ? (
-          /* Activado: solo 👍 en el primer segundo */
-          <div className="flex-1 flex flex-col items-center justify-center gap-8 animate-slide-up">
-            {countdown === settings.delaySeconds ? (
-              <div className="w-36 h-36 rounded-full bg-call-green flex items-center justify-center shadow-lg shadow-call-green/20">
-                <span className="text-7xl" role="img" aria-label="Activado">👍</span>
-              </div>
-            ) : (
-              <div className="w-36 h-36" />
-            )}
-            <button
-              onClick={cancelCall}
-              className="px-10 py-3.5 rounded-2xl bg-call-red text-white font-medium text-base active:scale-[0.98] transition-transform shadow-lg shadow-call-red/25"
+          /* Espera discreta: la pantalla no cambia nada. Nadie ve que algo
+             está en marcha. Mantén pulsado el botón 2 s para cancelar. */
+          <div className="flex-1 flex flex-col items-center justify-center gap-10 w-full max-w-sm">
+            <Button
+              onPointerDown={startCancelHold}
+              onPointerUp={endCancelHold}
+              onPointerLeave={endCancelHold}
+              onPointerCancel={endCancelHold}
+              className="w-56 h-56 p-0 rounded-full bg-call-red hover:bg-call-red text-primary-foreground flex items-center justify-center shadow-2xl shadow-call-red/30 active:scale-90 transition-transform duration-150"
+              aria-label="Llamada programada: mantén pulsado para cancelar"
             >
-              Cancelar / Cancel
-            </button>
+              <Phone className="!w-20 !h-20" strokeWidth={1.5} />
+            </Button>
+            <div className="text-center space-y-2">
+              <p className="text-foreground text-xl font-semibold">
+                {settings.callerName}
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Toca 2 veces / Tap twice
+              </p>
+            </div>
           </div>
         ) : state === "retry-wait" ? (
           /* Espera de reintento */
