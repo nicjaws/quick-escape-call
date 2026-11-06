@@ -64,8 +64,8 @@ export default function ActiveCallScreen({ callerName, callerPhoto, onHangUp }: 
 
       {/* Caller info */}
       <div className="relative flex flex-col items-center pt-8 gap-1">
-        <p className="text-call-blue text-xl font-light">{formatTime(seconds)}</p>
-        <h1 className="text-[64px] leading-none font-light text-call-blue">{callerName}</h1>
+        <h1 className="text-[40px] leading-tight font-normal tracking-tight text-white text-center px-6">{callerName}</h1>
+        <p className="text-white/60 text-lg tabular-nums">{formatTime(seconds)}</p>
       </div>
 
       <div className="flex-1" />
@@ -92,7 +92,7 @@ export default function ActiveCallScreen({ callerName, callerPhoto, onHangUp }: 
               onClick={onHangUp}
               className="w-[68px] h-[68px] rounded-full bg-call-red flex items-center justify-center active:scale-95 transition-transform"
             >
-              <Phone className="w-7 h-7 text-white rotate-[135deg]" />
+              <Phone className="w-8 h-8 text-white rotate-[135deg]" fill="currentColor" strokeWidth={0} />
             </button>
             <span className="text-xs text-white">Finalizar</span>
           </div>
