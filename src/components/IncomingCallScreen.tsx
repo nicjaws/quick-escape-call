@@ -1,4 +1,4 @@
-import { Phone, PhoneOff, MessageSquare, Voicemail, ChevronRight } from "lucide-react";
+import { Phone, MessageSquare, Voicemail, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface IncomingCallScreenProps {
@@ -143,8 +143,8 @@ export default function IncomingCallScreen({
 
       {/* Caller info */}
       <div className="relative flex flex-col items-center pt-10 gap-1">
-        <p className="text-call-blue text-2xl font-light">iPhone</p>
-        <h1 className="text-[64px] leading-none font-light text-call-blue">{callerName}</h1>
+        <h1 className="text-[40px] leading-tight font-normal tracking-tight text-white text-center px-6">{callerName}</h1>
+        <p className="text-white/60 text-lg">móvil</p>
       </div>
 
       {/* Bottom controls */}
@@ -152,13 +152,13 @@ export default function IncomingCallScreen({
         {/* Mensaje / Buzón */}
         <div className="w-full flex items-center justify-between px-4">
           <div className="flex flex-col items-center gap-1.5">
-            <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
             <span className="text-xs text-white">Mensaje</span>
           </div>
           <div className="flex flex-col items-center gap-1.5">
-            <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
               <Voicemail className="w-5 h-5 text-white" />
             </div>
             <span className="text-xs text-white">Buzón de voz</span>
@@ -182,7 +182,7 @@ export default function IncomingCallScreen({
               style={{ transform: `translateX(${slide * 100}%)` }}
               className="absolute left-1 top-1 w-14 h-14 rounded-full bg-white flex items-center justify-center touch-none"
             >
-              <Phone className="w-6 h-6 text-call-green" />
+              <Phone className="w-6 h-6 text-call-green" fill="currentColor" strokeWidth={0} />
             </button>
             <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
           </div>
@@ -192,20 +192,22 @@ export default function IncomingCallScreen({
             <div className="flex flex-col items-center gap-2">
               <button
                 onClick={onDecline}
-                className="w-16 h-16 rounded-full bg-call-red flex items-center justify-center active:scale-95 transition-transform"
+                aria-label="Rechazar"
+                className="w-[76px] h-[76px] rounded-full bg-call-red flex items-center justify-center active:brightness-90"
               >
-                <PhoneOff className="w-7 h-7 text-white" />
+                <Phone className="w-8 h-8 text-white rotate-[135deg]" fill="currentColor" strokeWidth={0} />
               </button>
-              <span className="text-xs text-white">Rechazar</span>
+              <span className="text-sm text-white">Rechazar</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <button
                 onClick={onAnswer}
-                className="w-16 h-16 rounded-full bg-call-green flex items-center justify-center active:scale-95 transition-transform"
+                aria-label="Aceptar"
+                className="w-[76px] h-[76px] rounded-full bg-call-green flex items-center justify-center active:brightness-90"
               >
-                <Phone className="w-7 h-7 text-white" />
+                <Phone className="w-8 h-8 text-white" fill="currentColor" strokeWidth={0} />
               </button>
-              <span className="text-xs text-white">Aceptar</span>
+              <span className="text-sm text-white">Aceptar</span>
             </div>
           </div>
         )}

@@ -24,6 +24,9 @@ export function useWatchTrigger(onTrigger: (immediate?: boolean) => boolean | vo
       // ago): ignore it silently so no surprise call starts and the fallback
       // notification, if still pending, stays scheduled.
       if (event.expiresAt <= Date.now()) return;
+      // App in background: iOS cannot bring it to the front, so let the
+      // native fallback notification ring instead of playing audio unseen.
+      if (!event.immediate && typeof document !== "undefined" && document.visibilityState === "hidden") return;
       let accepted = results.get(event.requestId);
       if (accepted === undefined) {
         accepted = onTriggerRef.current(event.immediate === true) !== false;
