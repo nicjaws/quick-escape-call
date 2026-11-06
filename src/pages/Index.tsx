@@ -79,6 +79,23 @@ export default function Index() {
     setCountdown(0);
   };
 
+  // Discreet cancel: hold the button 2s. No visible cancel control —
+  // the screen must look untouched while the call is pending.
+  const cancelHold = useRef<number | null>(null);
+  const startCancelHold = () => {
+    cancelHold.current = window.setTimeout(() => {
+      cancelHold.current = null;
+      if (navigator.vibrate) navigator.vibrate(100);
+      cancelCall();
+    }, 2000);
+  };
+  const endCancelHold = () => {
+    if (cancelHold.current !== null) {
+      clearTimeout(cancelHold.current);
+      cancelHold.current = null;
+    }
+  };
+
   const answerCall = () => setState("active");
   const hangUp = () => setState("idle");
 
