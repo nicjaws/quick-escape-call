@@ -20,8 +20,6 @@ struct WatchDoubleTapDetector {
 class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
     static let shared = WatchSession()
     @Published private(set) var isSending = false
-    @Published private(set) var showConfirmation = false
-    @Published private(set) var errorMessage: String?
 
     override init() {
         super.init()
@@ -36,7 +34,6 @@ class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
                              error: Error?) {
         if let error = error {
             NSLog("[FakeCallWatch] Activation failed: %@", error.localizedDescription)
-            Task { @MainActor [weak self] in self?.errorMessage = "Sin conexión / Not connected" }
         }
     }
 
@@ -97,21 +94,14 @@ struct ContentView: View {
         VStack(spacing: 12) {
             Text("FakeCall").font(.headline)
             Button(action: handleTap) {
-                ZStack {
-                    if session.showConfirmation {
-                        Text("👍").font(.system(size: 38))
-                    } else if session.isSending {
-                        ProgressView()
-                    } else {
-                        Image(systemName: "phone.fill").font(.system(size: 38))
-                    }
-                }
-                .frame(maxWidth: .infinity, minHeight: 90)
+                // Always the same look: no spinner, no checkmark, no messages.
+                Image(systemName: "phone.fill")
+                    .font(.system(size: 38))
+                    .frame(maxWidth: .infinity, minHeight: 90)
             }
             .tint(.red)
-            .disabled(session.isSending || session.showConfirmation)
             .accessibilityLabel("Activar llamada / Trigger call")
-            Text(session.errorMessage ?? "Toca 2 veces / Tap twice")
+            Text("Toca 2 veces / Tap twice")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
