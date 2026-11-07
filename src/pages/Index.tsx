@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { Settings, Phone, Watch } from "lucide-react";
 import { WatchBridge } from "@/lib/watchBridge";
 import { useCallSettings } from "@/hooks/useCallSettings";
@@ -29,6 +30,13 @@ export default function Index() {
     setState(next);
     setCountdown(settings.delaySeconds);
     setShowSettings(false);
+    // Confirmación discreta: solo una vibración corta, sin sonido ni
+    // cambio visible. Nadie alrededor puede notar que algo se activó.
+    if (Capacitor.getPlatform() === "ios") {
+      void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
+    } else if (navigator.vibrate) {
+      navigator.vibrate(60);
+    }
     return true;
   };
 
@@ -160,28 +168,17 @@ export default function Index() {
             </button>
           </div>
         ) : state === "countdown" ? (
-          /* Espera discreta: la pantalla no cambia nada. Nadie ve que algo
-             está en marcha. Mantén pulsado el botón 2 s para cancelar. */
-          <div className="flex-1 flex flex-col items-center justify-center gap-10 w-full max-w-sm">
-            <Button
-              onPointerDown={startCancelHold}
-              onPointerUp={endCancelHold}
-              onPointerLeave={endCancelHold}
-              onPointerCancel={endCancelHold}
-              className="w-56 h-56 p-0 rounded-full bg-call-red hover:bg-call-red text-primary-foreground flex items-center justify-center shadow-2xl shadow-call-red/30 active:scale-90 transition-transform duration-150"
-              aria-label="Llamada programada: mantén pulsado para cancelar"
-            >
-              <Phone className="!w-20 !h-20" strokeWidth={1.5} />
-            </Button>
-            <div className="text-center space-y-2">
-              <p className="text-foreground text-xl font-semibold">
-                {settings.callerName}
-              </p>
-              <p className="text-muted-foreground text-sm">
-                Toca 2 veces / Tap twice
-              </p>
-            </div>
-          </div>
+          /* Espera totalmente discreta: pantalla negra, como si el iPhone
+             estuviera dormido. Nada delata que una llamada está en marcha.
+             Cancelación oculta: mantén pulsado 2 s en cualquier punto. */
+          <div
+            className="fixed inset-0 bg-black touch-none select-none"
+            onPointerDown={startCancelHold}
+            onPointerUp={endCancelHold}
+            onPointerLeave={endCancelHold}
+            onPointerCancel={endCancelHold}
+            aria-label="Llamada programada: mantén pulsado para cancelar"
+          />
         ) : state === "retry-wait" ? (
           /* Espera de reintento */
           <div className="flex-1 flex flex-col items-center justify-center gap-8 animate-slide-up">
