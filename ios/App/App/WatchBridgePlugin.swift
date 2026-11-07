@@ -115,7 +115,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate, 
         let delay = max(storedDelay ?? 10, 1)
         let content = UNMutableNotificationContent()
         content.title = callerName
-        content.body = "Llamada entrante / Incoming call"
+        content.body = "móvil / mobile"
         content.sound = UNNotificationSound(named: UNNotificationSoundName("ringtone.caf"))
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(delay), repeats: false)
         let request = UNNotificationRequest(identifier: notificationPrefix + requestId,
