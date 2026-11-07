@@ -96,14 +96,12 @@ struct ContentView: View {
             // Stealth: after the double tap the screen goes black, as if the
             // watch were asleep. Only a silent haptic confirms the trigger —
             // nobody looking at the watch can tell anything happened.
-            // Tap once (or wait 30 s) to bring the normal screen back.
+            // It stays black through the whole call; tap once to bring the
+            // normal screen back.
             Color.black
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture { stealth = false }
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 30) { stealth = false }
-                }
         } else {
             mainView
         }
