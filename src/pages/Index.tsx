@@ -93,7 +93,11 @@ export default function Index() {
   const startCancelHold = () => {
     cancelHold.current = window.setTimeout(() => {
       cancelHold.current = null;
-      if (navigator.vibrate) navigator.vibrate(100);
+      if (Capacitor.getPlatform() === "ios") {
+        void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => undefined);
+      } else if (navigator.vibrate) {
+        navigator.vibrate(100);
+      }
       cancelCall();
     }, 2000);
   };
