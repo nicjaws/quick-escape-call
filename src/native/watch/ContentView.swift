@@ -89,8 +89,27 @@ class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
 struct ContentView: View {
     @StateObject private var session = WatchSession.shared
     @State private var doubleTap = WatchDoubleTapDetector()
+    @State private var stealth = false
 
     var body: some View {
+        if stealth {
+            // Stealth: after the double tap the screen goes black, as if the
+            // watch were asleep. Only a silent haptic confirms the trigger —
+            // nobody looking at the watch can tell anything happened.
+            // Tap once (or wait 30 s) to bring the normal screen back.
+            Color.black
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture { stealth = false }
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 30) { stealth = false }
+                }
+        } else {
+            mainView
+        }
+    }
+
+    private var mainView: some View {
         VStack(spacing: 12) {
             Text("FakeCall").font(.headline)
             Button(action: handleTap) {
@@ -110,6 +129,9 @@ struct ContentView: View {
     }
 
     private func handleTap() {
-        if doubleTap.registerTap() { session.sendTrigger() }
+        if doubleTap.registerTap() {
+            session.sendTrigger()
+            stealth = true
+        }
     }
 }
