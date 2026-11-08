@@ -2,6 +2,7 @@ import Foundation
 import Capacitor
 import WatchConnectivity
 import UserNotifications
+import AVFoundation
 
 @objc(WatchBridgePlugin)
 public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate {
@@ -11,7 +12,8 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate, 
         CAPPluginMethod(name: "notifyTrigger", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "acknowledgeTrigger", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "syncSettings", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "requestNotificationPermission", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "requestNotificationPermission", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "installRingtone", returnType: CAPPluginReturnPromise)
     ]
 
     // Accessed only on the main queue, like Capacitor's event listener storage.
@@ -45,7 +47,48 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate, 
         if let delay = call.getInt("delaySeconds") {
             defaults.set(delay, forKey: "watchBridge.delaySeconds")
         }
+        if let custom = call.getBool("useCustomRingtone") {
+            defaults.set(custom, forKey: "watchBridge.useCustomRingtone")
+        }
         call.resolve()
+    }
+
+    /// Public iOS notification API: user-owned PCM WAV stored locally in
+    /// Library/Sounds, never read from private system ringtone directories.
+    @objc func installRingtone(_ call: CAPPluginCall) {
+        guard let base64 = call.getString("base64"),
+              base64.utf8.count <= 2_400_000,
+              let data = Data(base64Encoded: base64),
+              data.count > 44, data.count <= 1_764_044 else {
+            call.reject("Audio no válido / Invalid audio")
+            return
+        }
+        DispatchQueue.global(qos: .utility).async {
+            let temporary = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString + ".wav")
+            defer { try? FileManager.default.removeItem(at: temporary) }
+            do {
+                try data.write(to: temporary, options: .atomic)
+                let audio = try AVAudioFile(forReading: temporary)
+                let format = audio.fileFormat
+                let duration = Double(audio.length) / format.sampleRate
+                guard duration > 0, duration <= 20,
+                      format.sampleRate == 44100, format.channelCount == 1,
+                      (format.settings[AVFormatIDKey] as? UInt32) == kAudioFormatLinearPCM else {
+                    call.reject("Audio no compatible / Unsupported audio")
+                    return
+                }
+                let library = try FileManager.default.url(for: .libraryDirectory,
+                                                         in: .userDomainMask,
+                                                         appropriateFor: nil, create: true)
+                let directory = library.appendingPathComponent("Sounds", isDirectory: true)
+                try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                try data.write(to: directory.appendingPathComponent("personal-ringtone.wav"), options: .atomic)
+                call.resolve()
+            } catch {
+                call.reject("No se pudo guardar el tono / Could not save ringtone")
+            }
+        }
     }
 
     @objc func requestNotificationPermission(_ call: CAPPluginCall) {
@@ -116,7 +159,9 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate, 
         let content = UNMutableNotificationContent()
         content.title = callerName
         content.body = "móvil / mobile"
-        content.sound = UNNotificationSound(named: UNNotificationSoundName("ringtone.caf"))
+        let custom = defaults.bool(forKey: "watchBridge.useCustomRingtone")
+        let soundName = custom ? "personal-ringtone.wav" : "ringtone.caf"
+        content.sound = UNNotificationSound(named: UNNotificationSoundName(soundName))
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(delay), repeats: false)
         let request = UNNotificationRequest(identifier: notificationPrefix + requestId,
                                             content: content,

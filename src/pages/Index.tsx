@@ -57,8 +57,9 @@ export default function Index() {
     void WatchBridge.syncSettings({
       callerName: settings.callerName,
       delaySeconds: settings.delaySeconds,
+      useCustomRingtone: settings.ringtone === "custom",
     }).catch(() => undefined);
-  }, [settings.callerName, settings.delaySeconds]);
+  }, [settings.callerName, settings.delaySeconds, settings.ringtone]);
 
   const handlePhoneTap = () => {
     askNotificationPermission();
@@ -126,6 +127,7 @@ export default function Index() {
         callerName={settings.callerName}
         callerPhoto={settings.callerPhoto}
         locked={settings.lockedScreen}
+        ringtone={settings.ringtone}
         onAnswer={answerCall}
         onDecline={hangUp}
         onTimeout={handleRingTimeout}

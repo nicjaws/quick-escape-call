@@ -5,6 +5,8 @@ export interface CallSettings {
   delaySeconds: number;
   callerPhoto?: string; // data URL
   lockedScreen?: boolean;
+  ringtone?: "classic" | "custom";
+  ringtoneLabel?: string;
 }
 
 const DEFAULT_SETTINGS: CallSettings = {
@@ -12,6 +14,7 @@ const DEFAULT_SETTINGS: CallSettings = {
   delaySeconds: 10,
   callerPhoto: undefined,
   lockedScreen: false,
+  ringtone: "classic",
 };
 
 export function useCallSettings() {
