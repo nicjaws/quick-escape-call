@@ -13,7 +13,8 @@ interface WatchBridgePlugin {
     listener: (event: WatchTriggerEvent) => void,
   ): Promise<PluginListenerHandle>;
   acknowledgeTrigger(options: { requestId: string; accepted: boolean }): Promise<void>;
-  syncSettings(options: { callerName: string; delaySeconds: number }): Promise<void>;
+  syncSettings(options: { callerName: string; delaySeconds: number; useCustomRingtone?: boolean }): Promise<void>;
+  installRingtone(options: { base64: string }): Promise<void>;
   requestNotificationPermission(): Promise<{ granted: boolean }>;
 }
 
