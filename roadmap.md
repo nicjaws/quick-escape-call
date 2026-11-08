@@ -1,5 +1,7 @@
 # Roadmap — FakeCall
 
+- [ ] Mantener el Watch en negro sin temporizador durante la llamada y sincronizar las fuentes nativas
+- [ ] Comprobar acceso a tonos del iPhone y añadir una alternativa compatible en Ajustes sin servidor
 - [x] Activar tambien desde iPhone con dos toques, sin necesitar Apple Watch; 11 pruebas React correctas y flujo visible hasta contestar
 - [x] Corregir recepción iPhone, registro del puente y confirmación/error de envío desde los dos toques del Watch
 - [x] Explicar «Application context data is nil» y evitar usar contexto almacenado como señal de activación
