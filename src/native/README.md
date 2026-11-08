@@ -130,6 +130,10 @@ Archivos del Watch:
 
 ## Limitaciones honestas
 
+- El Watch permanece negro tras los dos toques, sin regreso automatico a los 30 segundos, incluso al volver a abrir la vista. Un toque intencionado devuelve el boton para otra activacion. La pantalla negra no bloquea el reloj ni impide que watchOS muestre sus propias notificaciones.
+- Apple no ofrece acceso publico al tono elegido en Ajustes del iPhone ni una lista de los tonos instalados. En Ajustes de FakeCall se puede importar un archivo de audio propio desde Archivos, escucharlo y elegir entre ese tono y el clasico. No cambia el tono de las llamadas reales.
+- El audio importado permanece solo en el dispositivo. Se convierte a WAV PCM mono, usando como maximo los primeros 20 segundos para respetar el ciclo de llamada y el limite de sonidos de notificacion de Apple (menos de 30 segundos). Se usa el mismo archivo en la llamada abierta y en la notificacion local. No se puede extraer automaticamente un tono comprado o protegido.
+- Para probar estos cambios: actualiza el proyecto local desde el repositorio y ejecuta `npm install`, `npm run build` y `npx cap sync ios`; reinstala los targets App y FakeCallWatch Watch App en Xcode. Comprueba importar, escuchar, reiniciar, activar desde Watch con iPhone abierto y en segundo plano, y volver al tono clasico. No se puede validar el sonido nativo desde el navegador.
 - Si la app se cerro deslizandola hacia arriba (forzar cierre), iOS no la despierta: hay que abrirla una vez para que el reloj vuelva a activarla.
 - El sonido de una notificacion es mas corto que el timbre completo de la app abierta.
 - Apple no permite a una app de terceros mostrar la pantalla de llamada real

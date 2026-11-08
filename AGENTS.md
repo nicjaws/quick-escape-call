@@ -8,4 +8,6 @@
 - Keep the deliverable native sources under `src/native/watch` identical to their corresponding Xcode sources; the Xcode targets compile the copies under `ios/App`.
 - Keep WatchConnectivity diagnostics local and log no user data; validate native builds and device connectivity on a Mac, not through browser simulation.
 - Keep iPhone double-tap input independent of Watch connectivity and feed both device inputs into the same guarded call flow; a Watch must not be required for local activation.
-- When the iPhone app cannot handle a Watch trigger in the foreground, schedule a local notification fallback (caller name and delay synced via `syncSettings`, sound `ringtone.caf`) and cancel it on web acknowledgement; CallKit/PushKit is rejected because it needs a server and Apple rejects VoIP use for fake calls.
+- When the iPhone app cannot handle a Watch trigger in the foreground, schedule a local notification fallback using settings synced via `syncSettings` and cancel it on web acknowledgement; CallKit/PushKit is rejected because it needs a server and Apple rejects VoIP use for fake calls.
+- Persist Watch privacy mode locally until an explicit user reset; delivery replies, timeouts and scene recreation must not reveal the activation UI.
+- Convert imported personal ringtones to a bounded mono PCM WAV, store audio in device-only IndexedDB and install that same file in iOS Library/Sounds; public iOS APIs do not expose the system's selected ringtone or ringtone library.

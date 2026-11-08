@@ -89,7 +89,7 @@ class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
 struct ContentView: View {
     @StateObject private var session = WatchSession.shared
     @State private var doubleTap = WatchDoubleTapDetector()
-    @State private var stealth = false
+    @AppStorage("fakecall.stealth") private var stealth = false
 
     var body: some View {
         if stealth {
