@@ -11,3 +11,4 @@
 - When the iPhone app cannot handle a Watch trigger in the foreground, schedule a local notification fallback using settings synced via `syncSettings` and cancel it on web acknowledgement; CallKit/PushKit is rejected because it needs a server and Apple rejects VoIP use for fake calls.
 - Persist Watch privacy mode locally until an explicit user reset; delivery replies, timeouts and scene recreation must not reveal the activation UI.
 - Convert imported personal ringtones to a bounded mono PCM WAV, store audio in device-only IndexedDB and install that same file in iOS Library/Sounds; public iOS APIs do not expose the system's selected ringtone or ringtone library.
+- Cover native startup and background snapshots in black; retain notification taps, check them on resume, and uncover only after React commits the matching presentation so the idle activation screen cannot flash.

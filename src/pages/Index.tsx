@@ -24,7 +24,7 @@ export default function Index() {
   // Both devices start the same flow; reject another request while busy.
   // `immediate` (fallback notification tap) skips the countdown.
   const triggerCall = (immediate = false) => {
-    if (stateRef.current !== "idle") return false;
+    if (stateRef.current !== "idle" && !(immediate && (stateRef.current === "countdown" || stateRef.current === "retry-wait"))) return false;
     const next: AppState = immediate ? "ringing" : "countdown";
     stateRef.current = next;
     setState(next);
@@ -40,7 +40,24 @@ export default function Index() {
     return true;
   };
 
-  useWatchTrigger(triggerCall);
+  const { presentationReady, notificationRequestId, resumeVersion } = useWatchTrigger(triggerCall);
+
+  useEffect(() => {
+    if (!presentationReady || Capacitor.getPlatform() !== "ios") return;
+    // The native cover stays up until React has committed and the browser has
+    // painted this presentation; an idle frame cannot race a notification tap.
+    let secondFrame: number | undefined;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        void WatchBridge.completePresentation({ requestId: notificationRequestId })
+          .catch(() => undefined);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      if (secondFrame !== undefined) cancelAnimationFrame(secondFrame);
+    };
+  }, [presentationReady, notificationRequestId, resumeVersion, state]);
 
   // Ask for notification permission on launch and again on the first user tap
   // (the bridge is guaranteed ready then, and iOS shows the system dialog).
@@ -120,6 +137,10 @@ export default function Index() {
   }, [state]);
 
   const handleRingTimeout = () => setState("retry-wait");
+
+  if (!presentationReady) {
+    return <div className="fixed inset-0 bg-call-private" />;
+  }
 
   if (state === "ringing") {
     return (
