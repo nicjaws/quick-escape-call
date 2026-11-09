@@ -1,5 +1,7 @@
 # Roadmap — FakeCall
 
+- [ ] Corregir las versiones de dependencias y preparar Xcode Cloud para resolver paquetes antes de archivar
+- [ ] Nicolas: volver a ejecutar Archive en Xcode Cloud; requiere acceso a Apple y un Mac para validación nativa
 - [x] Evitar la pantalla principal al abrir una notificación: protección negra nativa, entrega retenida y llamada sin animación de entrada; pruebas de inicio y regreso correctas
 - [x] Mantener el Watch en negro sin temporizador durante la llamada y sincronizar las fuentes nativas
 - [x] Comprobar acceso a tonos del iPhone y añadir una alternativa compatible en Ajustes sin servidor

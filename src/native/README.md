@@ -149,3 +149,45 @@ Las pruebas automatizadas de React se ejecutan con `npm test`. Las pruebas de lo
 - `npm run build && npx cap sync ios`.
 - Xcode: **Product → Archive**, luego *Distribute App* → App Store Connect.
 - Presentala como herramienta de seguridad personal, no como broma.
+
+## Xcode Cloud: «an out-of-date resolved file was detected»
+
+Este error indica que `Package.resolved` no coincide con las dependencias que
+solicita `CapApp-SPM/Package.swift`. No es un error de la cuenta de Apple ni del
+emparejamiento del reloj. Las versiones de Capacitor quedan fijadas en 8.3.3;
+el archivo de npm se actualiza también para incluir la vibración nativa.
+
+`ios/App/ci_scripts/ci_post_clone.sh` prepara cada copia nueva en Xcode Cloud:
+instala Node compatible si hace falta, ejecuta `npm ci`, genera los archivos
+de la app, sincroniza iOS y resuelve los paquetes Swift antes del archivado.
+Xcode regenera el `originHash` de `Package.resolved`; no se inventa ni se
+desactivan las comprobaciones estrictas del archivado.
+
+1. Espera a que los cambios estén en la rama `main` de GitHub.
+2. En App Store Connect abre **Xcode Cloud → Workflows → main** y inicia una
+   compilación nueva de la última revisión de `main`. No uses **Recompilar**
+   sobre la compilación antigua si conserva la revisión que falló.
+3. En **Registros**, comprueba que se ejecuta `ci_post_clone.sh` y termina con
+   `App assets, native plugins and Swift packages are ready for Xcode Cloud.`
+4. Revisa **Archive - iOS** y **Archive - watchOS**. El archivado aún debe
+   verificarse en Apple; las pruebas locales no sustituyen ese resultado.
+
+Para actualizar y resolver también en el Mac:
+
+```bash
+git pull
+npm ci
+npm run build
+npx cap sync ios
+xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj -scheme App
+npx cap open ios
+```
+
+Después de actualizar el proyecto local, `npx cap sync ios` es necesario para
+que los cambios lleguen a las apps nativas. Si el flujo de Apple pide acceso
+al repositorio público `ionic-team/capacitor-swift-pm`, autorízalo desde los
+ajustes de Xcode Cloud. Usa una versión de Xcode cuyo SDK admita la versión
+mínima de watchOS configurada en el proyecto.
+
+Guía de Apple: https://developer.apple.com/documentation/xcode/writing-custom-build-scripts
+Guía de desarrollo nativo: https://lovable.dev/blog/building-mobile-apps-with-capacitor
