@@ -169,7 +169,7 @@ export default function SettingsPanel({ settings, onChange }: SettingsPanelProps
         <Button type="button" variant="secondary" disabled={importing} className="w-full" onClick={() => audioRef.current?.click()}>
           <Music2 /> {importing ? "Importando… / Importing…" : "Importar tono / Import ringtone"}
         </Button>
-        <input ref={audioRef} type="file" accept="audio/*,.m4r,.caf,.wav,.aiff" className="hidden" onChange={(event) => {
+        <input ref={audioRef} type="file" accept=".mp3,.m4a,.m4r,.aac,.wav,.aiff,.caf,.ogg,.flac" className="hidden" onChange={(event) => {
           const file = event.target.files?.[0];
           event.target.value = "";
           if (file) void handleAudio(file);
