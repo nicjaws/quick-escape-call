@@ -60,7 +60,9 @@ class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
                 guard let self = self, self.isSending else { return }
                 self.isSending = false
                 if accepted {
-                    WKInterfaceDevice.current().play(.success)
+                    // Silent confirmation: .click is haptic-only, no audible
+                    // tone (unlike .success, which plays a chime).
+                    WKInterfaceDevice.current().play(.click)
                 } else {
                     self.fail()
                 }
@@ -82,7 +84,8 @@ class WatchSession: NSObject, ObservableObject, WCSessionDelegate {
 
     private func fail() {
         isSending = false
-        WKInterfaceDevice.current().play(.failure)
+        // Haptic-only too: .failure would play an audible alert tone.
+        WKInterfaceDevice.current().play(.stop)
     }
 }
 
