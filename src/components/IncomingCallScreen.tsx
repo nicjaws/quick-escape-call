@@ -7,6 +7,7 @@ interface IncomingCallScreenProps {
   callerPhoto?: string;
   locked?: boolean;
   ringtone?: "classic" | "custom";
+  animateEntrance?: boolean;
   onAnswer: () => void;
   onDecline: () => void;
   onTimeout?: () => void;
@@ -17,6 +18,7 @@ export default function IncomingCallScreen({
   callerPhoto,
   locked = false,
   ringtone = "classic",
+  animateEntrance = true,
   onAnswer,
   onDecline,
   onTimeout,
@@ -70,7 +72,7 @@ export default function IncomingCallScreen({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-black animate-slide-up text-white"
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-between bg-black text-white ${animateEntrance ? "animate-slide-up" : ""}`}
       style={{
         paddingTop: "calc(env(safe-area-inset-top, 0px) + 24px)",
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)",

@@ -149,6 +149,7 @@ export default function Index() {
         callerPhoto={settings.callerPhoto}
         locked={settings.lockedScreen}
         ringtone={settings.ringtone}
+        animateEntrance={!notificationRequestId}
         onAnswer={answerCall}
         onDecline={hangUp}
         onTimeout={handleRingTimeout}
