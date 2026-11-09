@@ -45,26 +45,29 @@ describe("useWatchTrigger", () => {
     expect(bridge.remove).toHaveBeenCalledTimes(2);
   });
 
-  it("does not falsely confirm a request rejected while the iPhone is busy", () => {
+  it("does not falsely confirm a request rejected while the iPhone is busy", async () => {
     const onTrigger = vi.fn(() => false);
     renderHook(() => useWatchTrigger(onTrigger));
+    await act(async () => {});
     act(() => receive(request()));
     expect(bridge.acknowledgeTrigger).toHaveBeenCalledWith({ requestId: "watch-request", accepted: false });
   });
 
-  it("does not restart a call when the same request is delivered twice", () => {
+  it("does not restart a call when the same request is delivered twice", async () => {
     const onTrigger = vi.fn(() => true);
     renderHook(() => useWatchTrigger(onTrigger));
+    await act(async () => {});
     const event = request();
     act(() => { receive(event); receive(event); });
     expect(onTrigger).toHaveBeenCalledTimes(1);
     expect(bridge.acknowledgeTrigger).toHaveBeenCalledTimes(2);
   });
 
-  it("uses the current callback without removing and reinstalling the listener", () => {
+  it("uses the current callback without removing and reinstalling the listener", async () => {
     const first = vi.fn(() => true);
     const latest = vi.fn(() => true);
     const { rerender } = renderHook(({ callback }) => useWatchTrigger(callback), { initialProps: { callback: first } });
+    await act(async () => {});
     rerender({ callback: latest });
     act(() => receive(request()));
     expect(first).not.toHaveBeenCalled();
@@ -72,18 +75,20 @@ describe("useWatchTrigger", () => {
     expect(bridge.addListener).toHaveBeenCalledTimes(2);
   });
 
-  it("ignores expired startup events without triggering a surprise call", () => {
+  it("ignores expired startup events without triggering a surprise call", async () => {
     const onTrigger = vi.fn(() => true);
     renderHook(() => useWatchTrigger(onTrigger));
+    await act(async () => {});
     act(() => receive({ requestId: "expired", expiresAt: Date.now() - 1 }));
     expect(onTrigger).not.toHaveBeenCalled();
     // No acknowledgement: the native fallback notification must stay scheduled.
     expect(bridge.acknowledgeTrigger).not.toHaveBeenCalled();
   });
 
-  it("passes the immediate flag from a notification tap to the callback", () => {
+  it("passes the immediate flag from a notification tap to the callback", async () => {
     const onTrigger = vi.fn(() => true);
     renderHook(() => useWatchTrigger(onTrigger));
+    await act(async () => {});
     act(() => receive({ requestId: "tap", expiresAt: Date.now() + 8000, immediate: true }));
     expect(onTrigger).toHaveBeenCalledWith(true);
     expect(bridge.acknowledgeTrigger).toHaveBeenCalledWith({ requestId: "tap", accepted: true });
@@ -114,9 +119,10 @@ describe("useWatchTrigger", () => {
     expect(result.current.notificationRequestId).toBe("resumed");
   });
 
-  it("upgrades a delayed Watch activation when its notification is tapped", () => {
+  it("upgrades a delayed Watch activation when its notification is tapped", async () => {
     const onTrigger = vi.fn(() => true);
     renderHook(() => useWatchTrigger(onTrigger));
+    await act(async () => {});
     act(() => {
       receive(request("same-call"));
       receive({ ...request("same-call"), immediate: true });
