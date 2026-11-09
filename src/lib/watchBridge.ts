@@ -12,6 +12,9 @@ interface WatchBridgePlugin {
     eventName: "trigger",
     listener: (event: WatchTriggerEvent) => void,
   ): Promise<PluginListenerHandle>;
+  addListener(eventName: "resume", listener: () => void): Promise<PluginListenerHandle>;
+  getPendingNotificationTrigger(): Promise<{ trigger?: WatchTriggerEvent }>;
+  completePresentation(options: { requestId?: string }): Promise<void>;
   acknowledgeTrigger(options: { requestId: string; accepted: boolean }): Promise<void>;
   syncSettings(options: { callerName: string; delaySeconds: number; useCustomRingtone?: boolean }): Promise<void>;
   installRingtone(options: { base64: string }): Promise<void>;
