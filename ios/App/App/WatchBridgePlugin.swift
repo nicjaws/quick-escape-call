@@ -10,6 +10,8 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate, 
     public let jsName = "WatchBridge"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "notifyTrigger", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getPendingNotificationTrigger", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "completePresentation", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "acknowledgeTrigger", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "syncSettings", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "requestNotificationPermission", returnType: CAPPluginReturnPromise),
@@ -20,6 +22,10 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate, 
     private var pendingReplies: [String: ([String: Any]) -> Void] = [:]
     private var pendingRequests = Set<String>()
     private let notificationPrefix = "fakecall-"
+    private var pendingNotificationTrigger: [String: Any]?
+    private var resumeObserver: NSObjectProtocol?
+    private var presentationGeneration = 0
+    private var presentedGeneration = -1
 
     public override func load() {
         if WCSession.isSupported() {
@@ -27,7 +33,53 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate, 
             WCSession.default.activate()
         }
         UNUserNotificationCenter.current().delegate = self
+        resumeObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.presentationGeneration += 1
+            self.notifyListeners("resume", data: [:], retainUntilConsumed: true)
+        }
         NSLog("[WatchBridge] Receiver registered")
+    }
+
+    deinit {
+        if let resumeObserver = resumeObserver {
+            NotificationCenter.default.removeObserver(resumeObserver)
+        }
+    }
+
+    @objc func getPendingNotificationTrigger(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if let trigger = self.pendingNotificationTrigger {
+                call.resolve(["trigger": trigger])
+            } else {
+                call.resolve([:])
+            }
+        }
+    }
+
+    /// React calls this after committing the incoming-call frame. A late idle
+    /// acknowledgement must never uncover a notification's launch screen.
+    @objc func completePresentation(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if let trigger = self.pendingNotificationTrigger {
+                guard call.getString("requestId") == trigger["requestId"] as? String else {
+                    call.resolve()
+                    return
+                }
+                self.pendingNotificationTrigger = nil
+            }
+            guard UIApplication.shared.applicationState == .active else {
+                call.resolve()
+                return
+            }
+            if self.presentedGeneration != self.presentationGeneration {
+                self.presentedGeneration = self.presentationGeneration
+                (self.bridge?.viewController as? AppBridgeViewController)?.revealPresentation()
+            }
+            call.resolve()
+        }
     }
 
     @objc func notifyTrigger(_ call: CAPPluginCall) {
@@ -178,14 +230,19 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate, 
                                        didReceive response: UNNotificationResponse,
                                        withCompletionHandler completionHandler: @escaping () -> Void) {
         let identifier = response.notification.request.identifier
-        let requestId = identifier.hasPrefix(notificationPrefix)
-            ? String(identifier.dropFirst(notificationPrefix.count))
-            : identifier
+        guard identifier.hasPrefix(notificationPrefix),
+              response.actionIdentifier == UNNotificationDefaultActionIdentifier else {
+            completionHandler()
+            return
+        }
+        let requestId = String(identifier.dropFirst(notificationPrefix.count))
         DispatchQueue.main.async {
+            (self.bridge?.viewController as? AppBridgeViewController)?.concealPresentation()
+            self.presentationGeneration += 1
             let expiresAt = Date().addingTimeInterval(8).timeIntervalSince1970 * 1000
-            self.notifyListeners("trigger",
-                                 data: ["requestId": requestId, "expiresAt": expiresAt, "immediate": true],
-                                 retainUntilConsumed: true)
+            let trigger: [String: Any] = ["requestId": requestId, "expiresAt": expiresAt, "immediate": true]
+            self.pendingNotificationTrigger = trigger
+            self.notifyListeners("trigger", data: trigger, retainUntilConsumed: true)
             completionHandler()
         }
     }
