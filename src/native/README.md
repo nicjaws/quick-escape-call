@@ -125,6 +125,7 @@ Archivos del Watch:
 
 - Al recibir los dos toques del reloj, el iPhone programa una **notificacion local** con el nombre del contacto, el retardo configurado y el timbre `ringtone.caf`. Si la app esta abierta, cancela esa notificacion y muestra la llamada completa como siempre.
 - Si la app esta cerrada o el iPhone bloqueado, la notificacion aparece sola tras el retardo; al tocarla, la app se abre directamente en la pantalla de llamada entrante.
+- La apertura y la imagen que iOS guarda al pasar a segundo plano quedan negras. El puente conserva la notificación y solo retira esa protección tras pintar la llamada; no debe verse el botón rojo durante la transición. En el Mac, actualiza desde el repositorio, ejecuta `npm run build` y `npx cap sync ios`, reinstala **App** y prueba tocar la notificación tanto tras volver al inicio como tras un arranque nuevo. La transición nativa solo se puede comprobar en Xcode o iPhone.
 - La app pide permiso de notificaciones la primera vez; hay que aceptarlo para que este respaldo funcione.
 - La app sincroniza nombre y retardo al nativo con `syncSettings` cada vez que cambian los ajustes.
 
