@@ -12,3 +12,4 @@
 - Persist Watch privacy mode locally until an explicit user reset; delivery replies, timeouts and scene recreation must not reveal the activation UI.
 - Convert imported personal ringtones to a bounded mono PCM WAV, store audio in device-only IndexedDB and install that same file in iOS Library/Sounds; public iOS APIs do not expose the system's selected ringtone or ringtone library.
 - Cover native startup and background snapshots in black; retain notification taps, check them on resume, and uncover only after React commits the matching presentation so the idle activation screen cannot flash.
+- Pin Capacitor core, platform and CLI versions together and refresh both package-manager locks; Xcode Cloud must install locked dependencies, build assets, sync iOS and explicitly resolve Swift packages in `ios/App/ci_scripts/ci_post_clone.sh` before strict archives so generated manifests and native plugins cannot drift from `Package.resolved`.
