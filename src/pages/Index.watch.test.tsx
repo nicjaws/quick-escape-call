@@ -9,6 +9,8 @@ const native = vi.hoisted(() => ({
   acknowledgeTrigger: vi.fn(() => Promise.resolve()),
   syncSettings: vi.fn(() => Promise.resolve()),
   requestNotificationPermission: vi.fn(() => Promise.resolve({ granted: true })),
+  getPendingNotificationTrigger: vi.fn<() => Promise<{ trigger?: WatchTriggerEvent }>>(() => Promise.resolve({})),
+  completePresentation: vi.fn<(_options: { requestId?: string }) => Promise<void>>(() => Promise.resolve()),
   remove: vi.fn(() => Promise.resolve()),
 }));
 vi.mock("@capacitor/core", () => ({ Capacitor: { getPlatform: native.getPlatform } }));
@@ -18,13 +20,16 @@ vi.mock("@/components/IncomingCallScreen", () => ({
 }));
 
 let receive: (event: WatchTriggerEvent) => void;
+let resume: () => void;
 beforeEach(() => {
   vi.useFakeTimers();
   vi.clearAllMocks();
   native.getPlatform.mockReturnValue("ios");
+  native.getPendingNotificationTrigger.mockResolvedValue({});
   localStorage.clear();
-  native.addListener.mockImplementation((_name, callback) => {
-    receive = callback;
+  native.addListener.mockImplementation((name, callback) => {
+    if (name === "trigger") receive = callback;
+    else resume = callback;
     return Promise.resolve({ remove: native.remove });
   });
 });
@@ -95,5 +100,40 @@ describe("Watch activation on iPhone", () => {
       await act(async () => { vi.advanceTimersByTime(1000); });
     }
     expect(screen.getByRole("alert").textContent).toBe("Trabajo");
+  });
+
+  it("rings immediately on cold launch from a notification and completes only its matching presentation", async () => {
+    native.getPendingNotificationTrigger.mockResolvedValue({ trigger: {
+      requestId: "cold-call", expiresAt: Date.now() + 8000, immediate: true,
+    } });
+    render(<Index />);
+    expect(native.completePresentation).not.toHaveBeenCalled();
+    await act(async () => {});
+    expect(screen.getByRole("alert").textContent).toBe("Trabajo");
+    await act(async () => { vi.advanceTimersByTime(100); });
+    expect(native.completePresentation).toHaveBeenCalledWith({ requestId: "cold-call" });
+    expect(native.completePresentation.mock.calls.every(([options]) => options.requestId === "cold-call")).toBe(true);
+  });
+
+  it("rings immediately when a notification resumes the app", async () => {
+    render(<Index />);
+    await act(async () => {});
+    native.getPendingNotificationTrigger.mockResolvedValue({ trigger: {
+      requestId: "warm-call", expiresAt: Date.now() + 8000, immediate: true,
+    } });
+    await act(async () => { resume(); });
+    expect(screen.getByRole("alert").textContent).toBe("Trabajo");
+    await act(async () => { vi.advanceTimersByTime(100); });
+    expect(native.completePresentation).toHaveBeenCalledWith({ requestId: "warm-call" });
+  });
+
+  it("skips a remaining countdown when the same call's notification is tapped", async () => {
+    render(<Index />);
+    await act(async () => {});
+    act(() => receive({ requestId: "upgrade", expiresAt: Date.now() + 8000 }));
+    act(() => receive({ requestId: "upgrade", expiresAt: Date.now() + 8000, immediate: true }));
+    expect(screen.getByRole("alert").textContent).toBe("Trabajo");
+    await act(async () => { vi.advanceTimersByTime(100); });
+    expect(native.completePresentation).toHaveBeenCalledWith({ requestId: "upgrade" });
   });
 });

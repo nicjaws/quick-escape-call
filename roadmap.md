@@ -1,7 +1,9 @@
 # Roadmap — FakeCall
 
-- [ ] Mantener el Watch en negro sin temporizador durante la llamada y sincronizar las fuentes nativas
-- [ ] Comprobar acceso a tonos del iPhone y añadir una alternativa compatible en Ajustes sin servidor
+- [x] Evitar la pantalla principal al abrir una notificación: protección negra nativa, entrega retenida y llamada sin animación de entrada; pruebas de inicio y regreso correctas
+- [x] Mantener el Watch en negro sin temporizador durante la llamada y sincronizar las fuentes nativas
+- [x] Comprobar acceso a tonos del iPhone y añadir una alternativa compatible en Ajustes sin servidor
+- [ ] Nicolas: reinstalar App y comprobar que no aparece el botón rojo al tocar la notificación (inicio nuevo y regreso desde segundo plano); requiere Mac/iPhone
 - [x] Activar tambien desde iPhone con dos toques, sin necesitar Apple Watch; 11 pruebas React correctas y flujo visible hasta contestar
 - [x] Corregir recepción iPhone, registro del puente y confirmación/error de envío desde los dos toques del Watch
 - [x] Explicar «Application context data is nil» y evitar usar contexto almacenado como señal de activación

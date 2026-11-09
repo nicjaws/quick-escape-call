@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Capacitor, type PluginListenerHandle } from "@capacitor/core";
 import { WatchBridge, type WatchTriggerEvent } from "@/lib/watchBridge";
 
@@ -10,16 +10,20 @@ import { WatchBridge, type WatchTriggerEvent } from "@/lib/watchBridge";
 export function useWatchTrigger(onTrigger: (immediate?: boolean) => boolean | void) {
   const onTriggerRef = useRef(onTrigger);
   onTriggerRef.current = onTrigger;
+  const [presentationReady, setPresentationReady] = useState(() => Capacitor.getPlatform() !== "ios");
+  const [notificationRequestId, setNotificationRequestId] = useState<string>();
+  const [resumeVersion, setResumeVersion] = useState(0);
 
   useEffect(() => {
     let disposed = false;
-    let listener: PluginListenerHandle | undefined;
+    const listeners: PluginListenerHandle[] = [];
     const results = new Map<string, boolean>();
     const handler = () => onTriggerRef.current();
     window.addEventListener("fakecall:trigger", handler);
 
     const receiveTrigger = (event: WatchTriggerEvent) => {
       if (disposed || !event.requestId) return;
+      if (event.immediate) setNotificationRequestId(event.requestId);
       // Stale retained event (e.g. the app was woken in the background hours
       // ago): ignore it silently so no surprise call starts and the fallback
       // notification, if still pending, stays scheduled.
@@ -27,10 +31,12 @@ export function useWatchTrigger(onTrigger: (immediate?: boolean) => boolean | vo
       // App in background: iOS cannot bring it to the front, so let the
       // native fallback notification ring instead of playing audio unseen.
       if (!event.immediate && typeof document !== "undefined" && document.visibilityState === "hidden") return;
-      let accepted = results.get(event.requestId);
+      // A notification tap upgrades a pending countdown from the same request.
+      const deliveryKey = `${event.requestId}:${event.immediate === true}`;
+      let accepted = results.get(deliveryKey);
       if (accepted === undefined) {
         accepted = onTriggerRef.current(event.immediate === true) !== false;
-        results.set(event.requestId, accepted);
+        results.set(deliveryKey, accepted);
         if (results.size > 32) {
           const oldest = results.keys().next().value;
           if (oldest !== undefined) results.delete(oldest);
@@ -41,14 +47,31 @@ export function useWatchTrigger(onTrigger: (immediate?: boolean) => boolean | vo
     };
 
     if (Capacitor.getPlatform() === "ios") {
-      void WatchBridge.addListener("trigger", receiveTrigger)
-        .then((handle) => {
+      const checkPresentation = async () => {
+        if (disposed) return;
+        setPresentationReady(false);
+        try {
+          const { trigger } = await WatchBridge.getPendingNotificationTrigger();
+          if (disposed) return;
+          if (trigger) receiveTrigger(trigger);
+          setPresentationReady(true);
+          setResumeVersion((version) => version + 1);
+        } catch (error) {
+          if (!disposed) setPresentationReady(true);
+          console.error("Watch presentation check failed:", error);
+        }
+      };
+      const retainListener = (handle: PluginListenerHandle) => {
           if (disposed) {
             void handle.remove().catch((error: unknown) => console.error("Watch listener cleanup failed:", error));
           } else {
-            listener = handle;
+            listeners.push(handle);
           }
-        })
+      };
+      void Promise.all([
+        WatchBridge.addListener("trigger", receiveTrigger).then(retainListener),
+        WatchBridge.addListener("resume", () => { void checkPresentation(); }).then(retainListener),
+      ]).then(checkPresentation)
         .catch((error: unknown) => console.error("WatchBridge is unavailable:", error));
     }
 
@@ -59,7 +82,11 @@ export function useWatchTrigger(onTrigger: (immediate?: boolean) => boolean | vo
       disposed = true;
       window.removeEventListener("fakecall:trigger", handler);
       if (testWindow.__fakeCallTrigger === handler) delete testWindow.__fakeCallTrigger;
-      void listener?.remove().catch((error: unknown) => console.error("Watch listener cleanup failed:", error));
+      for (const listener of listeners) {
+        void listener.remove().catch((error: unknown) => console.error("Watch listener cleanup failed:", error));
+      }
     };
   }, []);
+
+  return { presentationReady, notificationRequestId, resumeVersion };
 }
