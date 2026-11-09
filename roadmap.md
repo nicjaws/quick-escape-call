@@ -1,5 +1,6 @@
 # Roadmap — FakeCall
 
+- [ ] Evitar la pantalla principal al abrir una notificación: ocultar la vista previa de iOS y esperar la llamada antes de revelar la interfaz
 - [ ] Mantener el Watch en negro sin temporizador durante la llamada y sincronizar las fuentes nativas
 - [ ] Comprobar acceso a tonos del iPhone y añadir una alternativa compatible en Ajustes sin servidor
 - [x] Activar tambien desde iPhone con dos toques, sin necesitar Apple Watch; 11 pruebas React correctas y flujo visible hasta contestar
