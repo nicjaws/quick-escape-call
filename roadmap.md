@@ -1,5 +1,6 @@
 # Roadmap — FakeCall
 
+- [ ] Corregir el fallo de firma (Command CodeSign failed) en Xcode Cloud: alinear la firma automática de todos los targets
 - [ ] Corregir las versiones de dependencias y preparar Xcode Cloud para resolver paquetes antes de archivar
 - [ ] Nicolas: volver a ejecutar Archive en Xcode Cloud; requiere acceso a Apple y un Mac para validación nativa
 - [x] Evitar la pantalla principal al abrir una notificación: protección negra nativa, entrega retenida y llamada sin animación de entrada; pruebas de inicio y regreso correctas
