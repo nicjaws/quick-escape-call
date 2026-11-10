@@ -191,3 +191,22 @@ mínima de watchOS configurada en el proyecto.
 
 Guía de Apple: https://developer.apple.com/documentation/xcode/writing-custom-build-scripts
 Guía de desarrollo nativo: https://lovable.dev/blog/building-mobile-apps-with-capacitor
+
+## Xcode Cloud: «Command CodeSign failed with a nonzero exit code»
+
+El proyecto tenia el equipo de firma (Team ID) fijado a mano en los targets.
+En el Mac funciona porque coincide con la cuenta local, pero Xcode Cloud firma
+con el equipo de App Store Connect y falla si el ID fijado no es el suyo.
+
+Ya esta corregido: los targets usan firma automatica sin Team ID fijado, asi
+que cada entorno firma con su propio equipo.
+
+- En Xcode Cloud: no hay que hacer nada mas; la siguiente compilacion firma
+  con el equipo de App Store Connect.
+- En tu Mac: abre `npx cap open ios`, y en **Signing & Capabilities** de cada
+  target (App y FakeCallWatch Watch App) vuelve a elegir tu **Team** una vez.
+  Xcode lo guarda solo en tu copia local.
+
+Si el error de firma persiste en la nube, abre el registro de la compilacion y
+busca la linea anterior a «Command CodeSign failed»: suele indicar el target
+exacto y el motivo (perfil, certificado o ID de bundle no registrado).

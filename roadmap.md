@@ -1,6 +1,7 @@
 # Roadmap — FakeCall
 
-- [ ] Corregir las versiones de dependencias y preparar Xcode Cloud para resolver paquetes antes de archivar
+- [x] Corregir el fallo de firma (Command CodeSign failed) en Xcode Cloud: Team ID fijado a mano eliminado, firma automática en todos los targets
+- [x] Corregir las versiones de dependencias y preparar Xcode Cloud para resolver paquetes antes de archivar (Capacitor fijado en 8.3.3, Package.swift regenerado con Haptics, script ci_post_clone.sh)
 - [ ] Nicolas: volver a ejecutar Archive en Xcode Cloud; requiere acceso a Apple y un Mac para validación nativa
 - [x] Evitar la pantalla principal al abrir una notificación: protección negra nativa, entrega retenida y llamada sin animación de entrada; pruebas de inicio y regreso correctas
 - [x] Mantener el Watch en negro sin temporizador durante la llamada y sincronizar las fuentes nativas
